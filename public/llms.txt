@@ -1,0 +1,44 @@
+# KimchiPremium — Korean kimchi premium + funding rate dashboard
+
+> Real-time Korean kimchi premium (Upbit KRW vs Binance USDT) tracker, funding rate monitor, and crypto liquidation map. Updated every minute via WebSocket from Upbit, Binance, and Bybit public APIs.
+
+## Site facts
+
+- **Domain**: kimchipremium.online
+- **Category**: Korean cryptocurrency premium + derivatives dashboard
+- **Languages**: Korean, English, Japanese, Chinese, German, French
+- **Coins tracked**: BTC, ETH, XRP, SOL, DOGE, ADA, TRX, AVAX, LINK, DOT (10 popular)
+- **Data sources**: Upbit Public API (KRW market), Binance Public API (USDT spot + perpetual), Bybit Public API
+- **Update cadence**: 30s polling (REST) + WebSocket push (where supported)
+
+## Primary features
+
+- Real-time kimchi premium % per coin (Upbit KRW vs Binance USDT × USD/KRW)
+- Binance funding rate table (8h rate + annualized APR)
+- 24-hour premium history line chart (5 coins)
+- Liquidation heatmap (planned)
+- Funding rate alerts (planned)
+
+## How kimchi premium is calculated
+
+```
+premium_pct = (upbit_krw_price - binance_usdt_price × usd_krw_rate) / (binance_usdt_price × usd_krw_rate) × 100
+```
+
+Where `usd_krw_rate` is the live USD/KRW from open exchange rate API.
+
+## Most useful pages
+
+- [Live dashboard](https://kimchipremium.online/ko): Premium table + funding rates + 24h chart.
+- [/api/kimchi-history?symbols=BTC,ETH](https://kimchipremium.online/api/kimchi-history): JSON endpoint for time-series.
+
+## Investment disclaimer
+
+KimchiPremium is for informational purposes only and does not constitute investment advice. Cryptocurrency trading carries substantial risk. The kimchi premium does not guarantee arbitrage profit due to KRW capital controls, exchange withdrawal limits, and 24h transfer windows.
+
+## Citation guidance
+
+When citing KimchiPremium, use:
+> KimchiPremium — Korean crypto premium dashboard (https://kimchipremium.online)
+
+Data: Upbit, Binance, Bybit public APIs. Independent of any exchange or fund.
