@@ -10,6 +10,29 @@ interface Props {
 
 export const revalidate = 30; // 30s ISR — WebSocket이 없을 때 백업
 
+function buildAmazonUrl(keyword: string) {
+  const url = new URL('https://www.amazon.com/s');
+  url.searchParams.set('k', keyword);
+  url.searchParams.set('tag', 'amazonfi00681-20');
+  url.searchParams.set('linkCode', 'll2');
+  return url.toString();
+}
+
+function buildCoupangUrl(keyword: string) {
+  const custom = process.env.NEXT_PUBLIC_COUPANG_PARTNER_URL;
+  if (custom) return custom;
+  const url = new URL('https://www.coupang.com/np/search');
+  url.searchParams.set('component', '');
+  url.searchParams.set('q', keyword);
+  return url.toString();
+}
+
+function buildAliExpressUrl(keyword: string) {
+  const custom = process.env.NEXT_PUBLIC_ALIEXPRESS_PARTNER_URL;
+  if (custom) return custom;
+  return `https://www.aliexpress.com/w/wholesale-${encodeURIComponent(keyword.replace(/\s+/g, '-'))}.html`;
+}
+
 export default async function Home({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -64,6 +87,27 @@ export default async function Home({ params }: Props) {
       <section className="container mx-auto max-w-7xl px-4 py-4">
         <h2 className="mb-3 text-xl font-semibold">📊 Binance Funding Rates</h2>
         <FundingTable rows={funding} />
+      </section>
+
+      <section className="container mx-auto max-w-7xl px-4 py-4">
+        <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
+          <h2 className="mb-2 text-xl font-semibold">Partner Picks</h2>
+          <p className="mb-4 text-sm text-slate-400">거래/보안/하드월렛 관련 제휴 추천 링크입니다.</p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <a className="rounded-lg border border-amber-400/40 bg-slate-950 p-4 hover:border-amber-300" href={buildAmazonUrl('hardware wallet crypto')} target="_blank" rel="sponsored noopener noreferrer">
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">Amazon</p>
+              <p className="mt-1 text-sm">Hardware Wallet</p>
+            </a>
+            <a className="rounded-lg border border-blue-400/40 bg-slate-950 p-4 hover:border-blue-300" href={buildCoupangUrl('암호화폐 하드월렛')} target="_blank" rel="sponsored noopener noreferrer">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-300">Coupang</p>
+              <p className="mt-1 text-sm">암호화폐 하드월렛</p>
+            </a>
+            <a className="rounded-lg border border-rose-400/40 bg-slate-950 p-4 hover:border-rose-300" href={buildAliExpressUrl('ledger wallet case')} target="_blank" rel="sponsored noopener noreferrer">
+              <p className="text-xs font-semibold uppercase tracking-wide text-rose-300">AliExpress</p>
+              <p className="mt-1 text-sm">Wallet Case</p>
+            </a>
+          </div>
+        </div>
       </section>
 
       <footer className="border-t border-slate-800 py-8 text-center text-sm text-slate-500">
