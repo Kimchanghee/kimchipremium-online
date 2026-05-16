@@ -8,6 +8,13 @@ interface DataPoint {
   premiumPct: number;
 }
 
+function formatKstTime(timestamp: number) {
+  const kst = new Date(timestamp + 9 * 60 * 60 * 1000);
+  const hours = String(kst.getUTCHours()).padStart(2, '0');
+  const minutes = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${hours}:${minutes} KST`;
+}
+
 /**
  * 김치 프리미엄 시계열 차트 (recharts 미사용 — 순수 SVG로 가벼움 유지)
  * 코인별 라인 차트 + 평균선 + 0% 기준선.
@@ -90,11 +97,7 @@ export default function PremiumChart({
         {/* X축 시간 라벨 */}
         {[0, 0.25, 0.5, 0.75, 1].map((p) => {
           const ts = minTs + (maxTs - minTs) * p;
-          const t = new Date(ts).toLocaleTimeString('ko-KR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'Asia/Seoul',
-          });
+          const t = formatKstTime(ts);
           return <text key={p} x={PAD + (W - PAD * 2) * p} y={H - 10} fill="#64748b" fontSize={10} textAnchor="middle">{t}</text>;
         })}
 

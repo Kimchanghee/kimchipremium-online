@@ -1,5 +1,12 @@
 import type { FundingRate } from '@/lib/exchanges';
 
+function formatKstTime(timestamp: number) {
+  const kst = new Date(timestamp + 9 * 60 * 60 * 1000);
+  const hours = String(kst.getUTCHours()).padStart(2, '0');
+  const minutes = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${hours}:${minutes} KST`;
+}
+
 export default function FundingTable({ rows }: { rows: FundingRate[] }) {
   if (rows.length === 0) {
     return (
@@ -24,7 +31,6 @@ export default function FundingTable({ rows }: { rows: FundingRate[] }) {
         <tbody>
           {sorted.map((f) => {
             const annualized = f.ratePct * 3 * 365; // 8h x 3/day
-            const next = new Date(f.nextFundingTime);
             return (
               <tr key={`${f.exchange}-${f.symbol}`} className="border-b border-slate-800/50 hover:bg-slate-800/40">
                 <td className="p-3 font-semibold">{f.symbol}</td>
@@ -42,11 +48,7 @@ export default function FundingTable({ rows }: { rows: FundingRate[] }) {
                   {annualized.toFixed(1)}% APR
                 </td>
                 <td className="p-3 text-right text-xs text-slate-500">
-                  {next.toLocaleTimeString('ko-KR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: 'Asia/Seoul',
-                  })}
+                  {formatKstTime(f.nextFundingTime)}
                 </td>
               </tr>
             );
