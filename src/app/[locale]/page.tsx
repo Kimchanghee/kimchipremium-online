@@ -11,18 +11,6 @@ interface Props {
 
 export const revalidate = 30; // 30s ISR — WebSocket이 없을 때 백업
 
-const FALLBACK_KIMCHI: KimchiPremium[] = [
-  { symbol: 'BTC', upbitKrw: 148500000, binanceUsdt: 99000, usdKrw: 1498, binanceKrwEquiv: 148302000, premiumPct: 0.13, timestamp: Date.now() },
-  { symbol: 'ETH', upbitKrw: 5050000, binanceUsdt: 3370, usdKrw: 1498, binanceKrwEquiv: 5048260, premiumPct: 0.03, timestamp: Date.now() },
-  { symbol: 'XRP', upbitKrw: 3820, binanceUsdt: 2.55, usdKrw: 1498, binanceKrwEquiv: 3819.9, premiumPct: 0.0, timestamp: Date.now() },
-];
-
-const FALLBACK_FUNDING: FundingRate[] = [
-  { exchange: 'binance', symbol: 'BTC', rate: 0.000081, ratePct: 0.0081, nextFundingTime: Date.now() + 4 * 60 * 60 * 1000 },
-  { exchange: 'binance', symbol: 'ETH', rate: 0.000064, ratePct: 0.0064, nextFundingTime: Date.now() + 4 * 60 * 60 * 1000 },
-  { exchange: 'binance', symbol: 'SOL', rate: -0.000021, ratePct: -0.0021, nextFundingTime: Date.now() + 4 * 60 * 60 * 1000 },
-];
-
 function buildAmazonUrl(keyword: string) {
   const url = new URL('https://www.amazon.com/s');
   url.searchParams.set('k', keyword);
@@ -49,14 +37,28 @@ function buildAliExpressUrl(keyword: string) {
 export default async function Home({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const renderedAt = Date.now();
+  const nextFundingTime = renderedAt + 4 * 60 * 60 * 1000;
+
+  const fallbackKimchi: KimchiPremium[] = [
+    { symbol: 'BTC', upbitKrw: 148500000, binanceUsdt: 99000, usdKrw: 1498, binanceKrwEquiv: 148302000, premiumPct: 0.13, timestamp: renderedAt },
+    { symbol: 'ETH', upbitKrw: 5050000, binanceUsdt: 3370, usdKrw: 1498, binanceKrwEquiv: 5048260, premiumPct: 0.03, timestamp: renderedAt },
+    { symbol: 'XRP', upbitKrw: 3820, binanceUsdt: 2.55, usdKrw: 1498, binanceKrwEquiv: 3819.9, premiumPct: 0.0, timestamp: renderedAt },
+  ];
+
+  const fallbackFunding: FundingRate[] = [
+    { exchange: 'binance', symbol: 'BTC', rate: 0.000081, ratePct: 0.0081, nextFundingTime },
+    { exchange: 'binance', symbol: 'ETH', rate: 0.000064, ratePct: 0.0064, nextFundingTime },
+    { exchange: 'binance', symbol: 'SOL', rate: -0.000021, ratePct: -0.0021, nextFundingTime },
+  ];
 
   const [kimchiRaw, fundingRaw, usdKrw] = await Promise.all([
     calculateKimchiPremium().catch(() => []),
     fetchBinanceFundingRates().catch(() => []),
     getUsdKrw().catch(() => 1400),
   ]);
-  const kimchi = kimchiRaw.length ? kimchiRaw : FALLBACK_KIMCHI;
-  const funding = fundingRaw.length ? fundingRaw : FALLBACK_FUNDING;
+  const kimchi = kimchiRaw.length ? kimchiRaw : fallbackKimchi;
+  const funding = fundingRaw.length ? fundingRaw : fallbackFunding;
 
   const avgPremium =
     kimchi.length > 0
@@ -99,7 +101,7 @@ export default async function Home({ params }: Props) {
 
       <section className="container mx-auto max-w-7xl px-4 py-4">
         <h2 className="mb-3 text-xl font-semibold">📈 24시간 프리미엄 추이</h2>
-        <PremiumChart symbols={['BTC', 'ETH', 'XRP', 'SOL', 'DOGE']} />
+        <PremiumChart symbols={['BTC', 'ETH', 'XRP', 'SOL', 'DOGE']} fallbackEndTs={renderedAt} />
       </section>
 
       <section className="container mx-auto max-w-7xl px-4 py-4">

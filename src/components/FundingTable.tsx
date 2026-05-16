@@ -42,7 +42,11 @@ export default function FundingTable({ rows }: { rows: FundingRate[] }) {
                   {annualized.toFixed(1)}% APR
                 </td>
                 <td className="p-3 text-right text-xs text-slate-500">
-                  {next.toLocaleTimeString()}
+                  {next.toLocaleTimeString('ko-KR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'Asia/Seoul',
+                  })}
                 </td>
               </tr>
             );

@@ -12,7 +12,13 @@ interface DataPoint {
  * 김치 프리미엄 시계열 차트 (recharts 미사용 — 순수 SVG로 가벼움 유지)
  * 코인별 라인 차트 + 평균선 + 0% 기준선.
  */
-export default function PremiumChart({ symbols = ['BTC', 'ETH', 'XRP'] }: { symbols?: string[] }) {
+export default function PremiumChart({
+  symbols = ['BTC', 'ETH', 'XRP'],
+  fallbackEndTs = Date.UTC(2026, 0, 1, 0, 0, 0),
+}: {
+  symbols?: string[];
+  fallbackEndTs?: number;
+}) {
   const [series, setSeries] = useState<Record<string, DataPoint[]>>({});
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -33,18 +39,17 @@ export default function PremiumChart({ symbols = ['BTC', 'ETH', 'XRP'] }: { symb
   }, [symbols.join(',')]);
 
   const fallbackSeries = useMemo(() => {
-    const now = Date.now();
     return Object.fromEntries(
       symbols.map((symbol, idx) => [
         symbol,
         Array.from({ length: 12 }, (_, point) => ({
           symbol,
-          ts: now - (11 - point) * 2 * 60 * 60 * 1000,
+          ts: fallbackEndTs - (11 - point) * 2 * 60 * 60 * 1000,
           premiumPct: Number(((idx - 1) * 0.08 + Math.sin(point / 2 + idx) * 0.18).toFixed(2)),
         })),
       ])
     );
-  }, [symbols.join(',')]);
+  }, [fallbackEndTs, symbols.join(',')]);
 
   const displaySeries = Object.values(series).flat().length ? series : fallbackSeries;
   const allPoints = Object.values(displaySeries).flat();
@@ -85,7 +90,11 @@ export default function PremiumChart({ symbols = ['BTC', 'ETH', 'XRP'] }: { symb
         {/* X축 시간 라벨 */}
         {[0, 0.25, 0.5, 0.75, 1].map((p) => {
           const ts = minTs + (maxTs - minTs) * p;
-          const t = new Date(ts).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+          const t = new Date(ts).toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Asia/Seoul',
+          });
           return <text key={p} x={PAD + (W - PAD * 2) * p} y={H - 10} fill="#64748b" fontSize={10} textAnchor="middle">{t}</text>;
         })}
 
