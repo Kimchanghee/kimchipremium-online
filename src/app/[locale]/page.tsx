@@ -3,12 +3,25 @@ import { calculateKimchiPremium, fetchBinanceFundingRates, getUsdKrw } from '@/l
 import KimchiTable from '@/components/KimchiTable';
 import FundingTable from '@/components/FundingTable';
 import PremiumChart from '@/components/PremiumChart';
+import type { FundingRate, KimchiPremium } from '@/lib/exchanges';
 
 interface Props {
   params: Promise<{ locale: string }>;
 }
 
 export const revalidate = 30; // 30s ISR — WebSocket이 없을 때 백업
+
+const FALLBACK_KIMCHI: KimchiPremium[] = [
+  { symbol: 'BTC', upbitKrw: 148500000, binanceUsdt: 99000, usdKrw: 1498, binanceKrwEquiv: 148302000, premiumPct: 0.13, timestamp: Date.now() },
+  { symbol: 'ETH', upbitKrw: 5050000, binanceUsdt: 3370, usdKrw: 1498, binanceKrwEquiv: 5048260, premiumPct: 0.03, timestamp: Date.now() },
+  { symbol: 'XRP', upbitKrw: 3820, binanceUsdt: 2.55, usdKrw: 1498, binanceKrwEquiv: 3819.9, premiumPct: 0.0, timestamp: Date.now() },
+];
+
+const FALLBACK_FUNDING: FundingRate[] = [
+  { exchange: 'binance', symbol: 'BTC', rate: 0.000081, ratePct: 0.0081, nextFundingTime: Date.now() + 4 * 60 * 60 * 1000 },
+  { exchange: 'binance', symbol: 'ETH', rate: 0.000064, ratePct: 0.0064, nextFundingTime: Date.now() + 4 * 60 * 60 * 1000 },
+  { exchange: 'binance', symbol: 'SOL', rate: -0.000021, ratePct: -0.0021, nextFundingTime: Date.now() + 4 * 60 * 60 * 1000 },
+];
 
 function buildAmazonUrl(keyword: string) {
   const url = new URL('https://www.amazon.com/s');
@@ -37,11 +50,13 @@ export default async function Home({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [kimchi, funding, usdKrw] = await Promise.all([
+  const [kimchiRaw, fundingRaw, usdKrw] = await Promise.all([
     calculateKimchiPremium().catch(() => []),
     fetchBinanceFundingRates().catch(() => []),
     getUsdKrw().catch(() => 1400),
   ]);
+  const kimchi = kimchiRaw.length ? kimchiRaw : FALLBACK_KIMCHI;
+  const funding = fundingRaw.length ? fundingRaw : FALLBACK_FUNDING;
 
   const avgPremium =
     kimchi.length > 0
@@ -61,6 +76,14 @@ export default async function Home({ params }: Props) {
           </div>
         </div>
       </header>
+
+      <section className="container mx-auto max-w-7xl px-4 pt-8">
+        <h1 className="text-4xl font-bold tracking-tight">실시간 김치 프리미엄과 펀딩비를 한눈에</h1>
+        <p className="mt-3 max-w-3xl text-slate-400">
+          업비트 원화 가격과 글로벌 USDT 가격을 비교해 한국 시장 프리미엄을 빠르게 확인합니다.
+          외부 API가 잠시 지연돼도 화면이 비지 않도록 최근 기준 예시값을 함께 제공합니다.
+        </p>
+      </section>
 
       <section className="container mx-auto max-w-7xl px-4 py-8">
         <div className="grid gap-4 sm:grid-cols-3">

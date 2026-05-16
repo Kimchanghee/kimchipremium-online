@@ -4,7 +4,7 @@ export default function FundingTable({ rows }: { rows: FundingRate[] }) {
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-8 text-center text-slate-500">
-        Loading funding rates...
+        펀딩비 응답이 지연되고 있습니다. 다음 갱신 때 자동으로 다시 확인합니다.
       </div>
     );
   }
