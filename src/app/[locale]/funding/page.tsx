@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { fetchBinanceFundingRates } from '@/lib/exchanges';
@@ -11,6 +12,20 @@ interface Props {
 export const revalidate = 60;
 
 const SUPPORTED_LOCALES = ['ko', 'en', 'ja', 'zh', 'de', 'fr'] as const;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: 'Binance funding rates | KimchiPremium',
+    description: 'Read 8-hour Binance perpetual funding rates with kimchi premium context before acting on crowded long or short positioning.',
+    alternates: { canonical: `/${locale}/funding` },
+    openGraph: {
+      title: 'Binance funding rates | KimchiPremium',
+      description: 'Funding-rate context for major crypto assets.',
+      url: `https://kimchipremium.online/${locale}/funding`,
+    },
+  };
+}
 
 export default async function FundingPage({ params }: Props) {
   const { locale } = await params;
@@ -36,11 +51,16 @@ export default async function FundingPage({ params }: Props) {
             <p className="mt-3 text-sm leading-6 text-slate-400">
               Funding is not a buy or sell signal by itself. It shows which side of the perpetual market is paying and can help explain crowded long or short positioning.
             </p>
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              Read this together with premium, liquidity, and exchange status. A high rate can stay high during a strong trend,
+              while a sudden flip can simply reflect hedging demand around a news event.
+            </p>
           </div>
           <ul className="space-y-2 text-sm leading-6 text-slate-300">
             <li>- Positive funding usually means longs pay shorts, often during bullish crowding.</li>
             <li>- Negative funding usually means shorts pay longs, often during defensive or bearish crowding.</li>
             <li>- Compare funding with kimchi premium before assuming a local market imbalance.</li>
+            <li>- Recheck after the next 8-hour settlement window if the table looks unusually one-sided.</li>
           </ul>
         </section>
         <div className="mt-6"><FundingTable rows={funding} /></div>

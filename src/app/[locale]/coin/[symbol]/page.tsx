@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { calculateKimchiPremium, fetchBinanceFundingRates } from '@/lib/exchanges';
@@ -29,6 +30,20 @@ export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) =>
     SYMBOLS.map((symbol) => ({ locale, symbol }))
   );
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, symbol } = await params;
+  if (!SUPPORTED_LOCALES.includes(locale as any) || !SYMBOLS.includes(symbol as any)) return {};
+  const upper = symbol.toUpperCase();
+  const title = `${upper} kimchi premium | KimchiPremium`;
+  const description = `Check ${upper} kimchi premium, Upbit KRW price, Binance USDT equivalent, funding context, and interpretation notes.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/${locale}/coin/${symbol}` },
+    openGraph: { title, description, url: `https://kimchipremium.online/${locale}/coin/${symbol}` },
+  };
 }
 
 export default async function CoinPage({ params }: Props) {
@@ -70,11 +85,16 @@ export default async function CoinPage({ params }: Props) {
             <p className="mt-3 text-sm leading-6 text-slate-400">
               A coin page should explain the signal, not just show a number. Use this checklist before acting on a premium gap.
             </p>
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              The premium can widen because of local demand, transfer limits, stale liquidity, or a fast global move.
+              Treat the figure as a monitoring signal first and confirm the market path before making any trading decision.
+            </p>
           </div>
           <ul className="space-y-2 text-sm leading-6 text-slate-300">
             <li>- Compare local KRW price with global USDT equivalent and current USD/KRW rate.</li>
             <li>- Check funding: {rate ? `${rate.ratePct.toFixed(4)}% next funding` : 'funding data is waiting for the next API refresh'}.</li>
             <li>- Recheck exchange deposits, withdrawals, and order book depth if the premium is unusually high or low.</li>
+            <li>- Compare this coin with BTC and ETH to see whether the gap is market-wide or isolated to one asset.</li>
           </ul>
         </section>
       </section>

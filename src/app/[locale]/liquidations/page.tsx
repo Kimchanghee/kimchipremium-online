@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { calculateKimchiPremium } from '@/lib/exchanges';
@@ -10,6 +11,20 @@ interface Props {
 export const revalidate = 60;
 
 const SUPPORTED_LOCALES = ['ko', 'en', 'ja', 'zh', 'de', 'fr'] as const;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: 'Crypto pressure board | KimchiPremium',
+    description: 'Compare kimchi premium extremes, exchange price gaps, and pressure signals before assuming a liquidation or arbitrage opportunity.',
+    alternates: { canonical: `/${locale}/liquidations` },
+    openGraph: {
+      title: 'Crypto pressure board | KimchiPremium',
+      description: 'Premium and pressure signals for major crypto assets.',
+      url: `https://kimchipremium.online/${locale}/liquidations`,
+    },
+  };
+}
 
 export default async function LiquidationsPage({ params }: Props) {
   const { locale } = await params;
@@ -35,11 +50,16 @@ export default async function LiquidationsPage({ params }: Props) {
             <p className="mt-3 text-sm leading-6 text-slate-400">
               This page keeps the premium signal visible before any exchange or affiliate click. Use it to spot unusual gaps, then verify with order book depth and funding context.
             </p>
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              A pressure board is most useful when it slows down bad decisions. Treat every large gap as a question about
+              liquidity, transfer friction, and local demand before assuming it is immediately tradable.
+            </p>
           </div>
           <ul className="space-y-2 text-sm leading-6 text-slate-300">
             <li>- A high positive premium can mean local demand is paying more than global USDT markets.</li>
             <li>- A low or negative premium can show local weakness, withdrawal friction, or temporary liquidity gaps.</li>
             <li>- Always compare premium, funding, volume, and exchange status together before acting.</li>
+            <li>- If prices look stale, wait for the next refresh rather than following an outdated signal.</li>
           </ul>
         </section>
         <div className="mt-6 grid gap-3 md:grid-cols-2">
