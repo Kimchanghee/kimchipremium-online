@@ -30,6 +30,19 @@ export default async function FundingPage({ params }: Props) {
       <section className="container mx-auto max-w-7xl px-4 py-8">
         <h1 className="text-4xl font-bold tracking-tight">Binance funding rates</h1>
         <p className="mt-3 text-slate-400">8-hour perpetual futures funding rates for major crypto assets.</p>
+        <section className="mt-6 grid gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-5 md:grid-cols-[1fr_1.2fr]">
+          <div>
+            <h2 className="text-xl font-semibold">How to read funding</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              Funding is not a buy or sell signal by itself. It shows which side of the perpetual market is paying and can help explain crowded long or short positioning.
+            </p>
+          </div>
+          <ul className="space-y-2 text-sm leading-6 text-slate-300">
+            <li>- Positive funding usually means longs pay shorts, often during bullish crowding.</li>
+            <li>- Negative funding usually means shorts pay longs, often during defensive or bearish crowding.</li>
+            <li>- Compare funding with kimchi premium before assuming a local market imbalance.</li>
+          </ul>
+        </section>
         <div className="mt-6"><FundingTable rows={funding} /></div>
       </section>
     </main>
