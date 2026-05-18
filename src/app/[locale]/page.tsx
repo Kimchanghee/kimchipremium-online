@@ -119,15 +119,15 @@ export default async function Home({ params }: Props) {
           <h2 className="mb-2 text-xl font-semibold">Partner Picks</h2>
           <p className="mb-4 text-sm text-slate-400">거래/보안/하드월렛 관련 제휴 추천 링크입니다.</p>
           <div className="grid gap-3 sm:grid-cols-3">
-            <a className="rounded-lg border border-amber-400/40 bg-slate-950 p-4 hover:border-amber-300" href={buildAmazonUrl('hardware wallet crypto')} target="_blank" rel="sponsored noopener noreferrer">
+            <a className="rounded-lg border border-amber-400/40 bg-slate-950 p-4 hover:border-amber-300" href={buildAmazonUrl('hardware wallet crypto')} target="_blank" rel="sponsored noopener noreferrer nofollow" data-affiliate-link>
               <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">Amazon</p>
               <p className="mt-1 text-sm">Hardware Wallet</p>
             </a>
-            <a className="rounded-lg border border-blue-400/40 bg-slate-950 p-4 hover:border-blue-300" href={buildCoupangUrl('암호화폐 하드월렛')} target="_blank" rel="sponsored noopener noreferrer">
+            <a className="rounded-lg border border-blue-400/40 bg-slate-950 p-4 hover:border-blue-300" href={buildCoupangUrl('암호화폐 하드월렛')} target="_blank" rel="sponsored noopener noreferrer nofollow" data-affiliate-link>
               <p className="text-xs font-semibold uppercase tracking-wide text-blue-300">Coupang</p>
               <p className="mt-1 text-sm">암호화폐 하드월렛</p>
             </a>
-            <a className="rounded-lg border border-rose-400/40 bg-slate-950 p-4 hover:border-rose-300" href={buildAliExpressUrl('ledger wallet case')} target="_blank" rel="sponsored noopener noreferrer">
+            <a className="rounded-lg border border-rose-400/40 bg-slate-950 p-4 hover:border-rose-300" href={buildAliExpressUrl('ledger wallet case')} target="_blank" rel="sponsored noopener noreferrer nofollow" data-affiliate-link>
               <p className="text-xs font-semibold uppercase tracking-wide text-rose-300">AliExpress</p>
               <p className="mt-1 text-sm">Wallet Case</p>
             </a>
