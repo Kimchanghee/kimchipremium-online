@@ -4,6 +4,7 @@ import KimchiTable from '@/components/KimchiTable';
 import FundingTable from '@/components/FundingTable';
 import PremiumChart from '@/components/PremiumChart';
 import type { FundingRate, KimchiPremium } from '@/lib/exchanges';
+import SafeInlineAdsterra from '@/components/SafeInlineAdsterra';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -139,6 +140,7 @@ export default async function Home({ params }: Props) {
         <p>실시간 데이터 — Upbit / Binance / Bybit Public API</p>
         <p className="mt-1 text-xs">투자 자문 아님. 시세 정보는 참고용.</p>
       </footer>
+          <SafeInlineAdsterra placement="homepage-inline" />
     </main>
   );
 }
