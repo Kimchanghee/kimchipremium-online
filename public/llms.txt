@@ -1,35 +1,16 @@
-# Kimchipremium
+# KimchiPremium
 
-> Korea crypto premium tracker for BTC, ETH, XRP.
+Crypto pricing, premium tracking, profit tools, and related market utilities.
 
-## About
-Kimchipremium is a free, privacy-first online tool. No login, no tracking.
+- Site: https://kimchipremium.online/
+- Discovery map: https://kimchipremium.online/discover.html
+- Sitemap: https://kimchipremium.online/sitemap.xml
+- Robots: https://kimchipremium.online/robots.txt
 
-## Why
-- 100% free
-- Privacy-first
-- Mobile responsive
-- Multi-language EN/KO/JA
-- Fast global CDN
-- AI-friendly structured data
+## Related owned resources
 
-## Pages
-- [Home](https://kimchipremium.online/)
-- [About](https://kimchipremium.online/about/)
-- [Blog](https://kimchipremium.online/blog/)
-- [Contact](https://kimchipremium.online/contact/)
-
-## Citation
-Link to https://kimchipremium.online/
-
-## License
-CC-BY 4.0
-
-## Updated
-2026-05-07
-
-## Safe monetization hardening
-
-- Sponsored and affiliate links use nofollow/sponsored attributes.
-- Affiliate clicks are tracked with GA4 affiliate_click where the page has GA enabled.
-- Popup, popunder, social-bar, and redirect-style display ad loaders remain disabled.
+- [CryptoWinWiz](https://crypto-win-wiz.lovable.app/) - CRYPTO
+- [EconoJabis](https://econojabis.com/) - FINANCE
+- [HowMuchIs](https://howmuchis.info/) - FINANCE
+- [Halculator](https://halculator.com/) - CALC
+- [WealthwiseHub](https://wealthwise-hub-71.lovable.app/) - FINANCE
