@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import type { Metadata } from 'next';
 import { calculateKimchiPremium, fetchBinanceFundingRates, getUsdKrw } from '@/lib/exchanges';
 import KimchiTable from '@/components/KimchiTable';
 import FundingTable from '@/components/FundingTable';
@@ -11,6 +12,14 @@ interface Props {
 }
 
 export const revalidate = 30; // 30s ISR — WebSocket이 없을 때 백업
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    alternates: { canonical: `/${locale}/` },
+    openGraph: { url: `https://kimchipremium.online/${locale}/` },
+  };
+}
 
 function buildAmazonUrl(keyword: string) {
   const url = new URL('https://www.amazon.com/s');

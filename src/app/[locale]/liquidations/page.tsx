@@ -17,11 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: 'Crypto pressure board | KimchiPremium',
     description: 'Compare kimchi premium extremes, exchange price gaps, and pressure signals before assuming a liquidation or arbitrage opportunity.',
-    alternates: { canonical: `/${locale}/liquidations` },
+    alternates: { canonical: `/${locale}/liquidations/` },
     openGraph: {
       title: 'Crypto pressure board | KimchiPremium',
       description: 'Premium and pressure signals for major crypto assets.',
-      url: `https://kimchipremium.online/${locale}/liquidations`,
+      url: `https://kimchipremium.online/${locale}/liquidations/`,
     },
   };
 }

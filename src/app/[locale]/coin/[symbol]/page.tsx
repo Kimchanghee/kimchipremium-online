@@ -41,8 +41,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: `/${locale}/coin/${symbol}` },
-    openGraph: { title, description, url: `https://kimchipremium.online/${locale}/coin/${symbol}` },
+    alternates: { canonical: `/${locale}/coin/${symbol}/` },
+    openGraph: { title, description, url: `https://kimchipremium.online/${locale}/coin/${symbol}/` },
   };
 }
 

@@ -18,11 +18,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: 'Binance funding rates | KimchiPremium',
     description: 'Read 8-hour Binance perpetual funding rates with kimchi premium context before acting on crowded long or short positioning.',
-    alternates: { canonical: `/${locale}/funding` },
+    alternates: { canonical: `/${locale}/funding/` },
     openGraph: {
       title: 'Binance funding rates | KimchiPremium',
       description: 'Funding-rate context for major crypto assets.',
-      url: `https://kimchipremium.online/${locale}/funding`,
+      url: `https://kimchipremium.online/${locale}/funding/`,
     },
   };
 }

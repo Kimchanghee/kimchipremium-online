@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
+import type { Metadata } from 'next';
 import { calculateKimchiPremium } from '@/lib/exchanges';
 
 interface Props {
@@ -11,6 +12,18 @@ export const revalidate = 30;
 
 const SUPPORTED_LOCALES = ['ko', 'en', 'ja', 'zh', 'de', 'fr'] as const;
 const COINS = ['btc', 'eth', 'xrp', 'sol', 'doge', 'ada', 'trx', 'avax', 'link', 'dot'];
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, coin } = await params;
+  if (!SUPPORTED_LOCALES.includes(locale as any) || !COINS.includes(coin)) return {};
+  const symbol = coin.toUpperCase();
+  return {
+    title: `${symbol} kimchi premium | KimchiPremium`,
+    description: `Live ${symbol} kimchi premium and KRW/USDT comparison.`,
+    alternates: { canonical: `/${locale}/coin/${coin}/` },
+    openGraph: { title: `${symbol} kimchi premium | KimchiPremium`, url: `https://kimchipremium.online/${locale}/coin/${coin}/` },
+  };
+}
 
 export default async function CoinPage({ params }: Props) {
   const { locale, coin } = await params;
