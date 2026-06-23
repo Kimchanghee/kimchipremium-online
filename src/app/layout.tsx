@@ -32,6 +32,22 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+const AFFILIATE_CLICK_SCRIPT = `
+(function () {
+  window.addEventListener('click', function (event) {
+    var target = event.target;
+    if (!target || typeof target.closest !== 'function') return;
+    var link = target.closest('a[rel*="sponsored"],[data-affiliate-link]');
+    if (!link || typeof window.gtag !== 'function') return;
+    window.gtag('event', 'affiliate_click', {
+      merchant: (link.textContent || '').trim().slice(0, 60) || 'partner',
+      placement: link.getAttribute('data-placement') || link.getAttribute('aria-label') || 'sponsored-link',
+      page_location: window.location.href
+    });
+  }, { capture: true });
+})();
+`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
@@ -75,7 +91,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
               <script
           dangerouslySetInnerHTML={{
-            __html: "window.addEventListener('click',function(event){var link=event.target&&event.target.closest?event.target.closest('a[rel*=\\\"sponsored\\\"],[data-affiliate-link]'):null;if(!link||typeof window.gtag!==\\\"function\\\")return;window.gtag('event','affiliate_click',{merchant:(link.textContent||'').trim().slice(0,60)||'partner',placement:link.getAttribute('data-placement')||link.getAttribute('aria-label')||'sponsored-link',page_location:window.location.href});},{capture:true});",
+            __html: AFFILIATE_CLICK_SCRIPT,
           }}
         />
       </head>
