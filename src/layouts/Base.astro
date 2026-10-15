@@ -1,0 +1,126 @@
+---
+import { site } from '../site.config';
+import '../styles/global.css';
+
+interface Crumb { name: string; path: string }
+interface Props {
+  title: string; description: string; path: string; og?: string; ld?: Record<string, unknown>[];
+  crumbs?: Crumb[]; type?: 'website' | 'article'; modified?: string; lang?: 'ko' | 'en';
+}
+const { title, description, path, og = 'default', ld = [], crumbs = [], type = 'website', modified, lang = 'ko' } = Astro.props;
+const canonical = new URL(path, site.url).href;
+const ogImage = `${site.url}/og/${og}.png`;
+const org = {
+  '@context': 'https://schema.org', '@type': 'Organization', '@id': `${site.url}/#org`,
+  name: site.name, alternateName: 'kimchipremium.online', url: site.url + '/', logo: `${site.url}/favicon.svg`,
+  email: site.contactEmail, description: site.entity,
+};
+const website = {
+  '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${site.url}/#website`,
+  name: site.name, url: site.url + '/', inLanguage: 'ko-KR', publisher: { '@id': `${site.url}/#org` },
+};
+const breadcrumb = crumbs.length
+  ? { '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+      itemListElement: [{ name: '홈', path: '/' }, ...crumbs].map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: new URL(c.path, site.url).href })) }
+  : null;
+const allLd = [org, website, ...(breadcrumb ? [breadcrumb] : []), ...ld];
+const consentRegions = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IS','IE','IT','LV','LI','LT','LU','MT','NL','NO','PL','PT','RO','SK','SI','ES','SE','GB','CH'];
+const nav = [
+  { href: '/', label: '시세판' },
+  { href: '/coins/', label: '코인별' },
+  { href: '/calculator/', label: '계산기' },
+  { href: '/guides/', label: '가이드' },
+  { href: '/methodology/', label: '계산 방법' },
+];
+const current = Astro.url.pathname;
+---
+<!doctype html>
+<html lang={lang}>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="theme-color" content="#0e3a2f" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate" type="application/rss+xml" title="김프 전광판 가이드" href="/rss.xml" />
+  {path === '/' && <link rel="alternate" hreflang="en" href={`${site.url}/en/`} />}
+  <meta property="og:type" content={type} />
+  <meta property="og:site_name" content={site.name} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content={lang === 'en' ? 'en_US' : site.locale} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+  {modified && <meta property="article:modified_time" content={modified} />}
+  {site.gscVerification && <meta name="google-site-verification" content={site.gscVerification} />}
+  {site.naverVerification && <meta name="naver-site-verification" content={site.naverVerification} />}
+  <meta name="google-adsense-account" content={site.adsenseClient} />
+  <script is:inline define:vars={{ regions: consentRegions, ga4: site.ga4Id }}>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    window.gtag = gtag;
+    gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',region:regions,wait_for_update:500});
+    gtag('consent','default',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'});
+    if (ga4) { gtag('js', new Date()); gtag('config', ga4); }
+    window.kpTrack = function(name, params){ if (ga4) gtag('event', name, params || {}); };
+  </script>
+  {site.ga4Id && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${site.ga4Id}`}></script>}
+  <script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${site.adsenseClient}`} crossorigin="anonymous"></script>
+  {allLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+</head>
+<body>
+  <a class="skip" href="#main">{lang === 'en' ? 'Skip to content' : '본문 바로가기'}</a>
+  <header class="band">
+    <div class="band__inner">
+      <a class="mark" href="/" aria-label="김프 전광판 홈">
+        <span class="mark__glyph" aria-hidden="true">₩⇄$</span>
+        <span class="mark__name">김프 전광판</span>
+        <span class="mark__sub">업비트 ↔ 바이낸스</span>
+      </a>
+      <nav aria-label="주 메뉴">
+        <ul class="menu">
+          {nav.map((n) => (
+            <li><a href={n.href} aria-current={(n.href === '/' ? current === '/' : current.startsWith(n.href)) ? 'page' : undefined}>{n.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  </header>
+  {crumbs.length > 0 && (
+    <nav class="crumbs" aria-label={lang === 'en' ? 'Breadcrumb' : '현재 위치'}>
+      <ol>
+        <li><a href="/">홈</a></li>
+        {crumbs.map((c, i) => (i === crumbs.length - 1 ? <li aria-current="page">{c.name}</li> : <li><a href={c.path}>{c.name}</a></li>))}
+      </ol>
+    </nav>
+  )}
+  <main id="main" class="wrap">
+    <slot />
+  </main>
+  <footer class="foot">
+    <div class="foot__inner">
+      <p class="foot__entity">{site.entity}</p>
+      <ul class="foot__links">
+        <li><a href="/about/">소개</a></li>
+        <li><a href="/methodology/">계산 방법·데이터 출처</a></li>
+        <li><a href="/contact/">문의</a></li>
+        <li><a href="/privacy/">개인정보처리방침</a></li>
+        <li><a href="/terms/">이용약관</a></li>
+        <li><a href="/disclaimer/">면책 고지</a></li>
+        <li><a href="/en/" hreflang="en">English</a></li>
+        <li><a href="/rss.xml">RSS</a></li>
+      </ul>
+      <p class="foot__small">투자·차익거래 권유가 아닙니다. 거래소 추천·제휴 링크가 없습니다. 데이터: 업비트 Open API, 바이낸스 공개 시세, Frankfurter(ECB 기준환율). 광고: Google AdSense.</p>
+    </div>
+  </footer>
+</body>
+</html>
