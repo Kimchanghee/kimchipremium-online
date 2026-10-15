@@ -1,0 +1,14 @@
+{
+  // Static assets are served free by the assets layer. The Worker runs ONLY for /api/* (premium proxy:
+  // Upbit has no CORS). It caches responses >=30 s with the Cache API and degrades to 503 JSON.
+  "name": "kimchipremium-online-v2",
+  "compatibility_date": "2026-10-01",
+  "main": "./worker/index.mjs",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash",
+    "run_worker_first": ["/api/*"]
+  }
+}
