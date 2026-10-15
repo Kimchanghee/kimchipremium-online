@@ -1,0 +1,25 @@
+---
+import Page from '../layouts/Page.astro';
+import { site } from '../site.config';
+import { fitTitle, fitDesc } from '../lib/text';
+const title = fitTitle(['개인정보처리방침: 김프 전광판의 분석 쿠키와 광고 쿠키 안내']);
+const description = fitDesc([
+  '김프 전광판은 회원가입 없이 이용하며 이름이나 연락처를 수집하지 않습니다. Google 애널리틱스와 AdSense가 쓰는 쿠키, 유럽 지역 동의 관리, 맞춤 광고를 끄는 방법, 문의 이메일 처리 방식을 설명합니다.',
+  '김프 전광판은 회원가입 없이 이용하며 이름이나 연락처를 수집하지 않습니다. Google 애널리틱스와 AdSense 쿠키, 유럽 지역 동의 관리, 맞춤 광고를 끄는 방법, 문의 이메일 처리 방식을 설명합니다.',
+]);
+---
+<Page title={title} description={description} path="/privacy/" h1="김프 전광판은 어떤 개인정보를 처리하나요?" mark="개인정보처리방침" updated="2026-10-16"
+  answer="회원가입이 없어 이름·연락처 같은 개인정보를 직접 수집하지 않습니다. 다만 방문 통계를 위한 Google 애널리틱스와 광고를 위한 Google AdSense가 쿠키와 기기 식별 정보를 사용할 수 있으며, 아래에서 그 범위와 거부 방법을 설명합니다.">
+  <h2>직접 수집하는 정보</h2>
+  <p>문의 이메일을 보내면 회신을 위해 이메일 주소와 내용을 보관하며, 처리 완료 후 1년이 지나면 삭제합니다. 그 밖에 이 사이트가 직접 수집하는 개인정보는 없습니다. 계산기 입력값은 브라우저 안에서만 계산되고 서버로 전송되지 않습니다.</p>
+  <h2>Google 애널리틱스(GA4)</h2>
+  <p>방문 수, 유입 경로, 페이지별 이용 같은 통계를 위해 Google 애널리틱스를 사용할 수 있습니다. 이 과정에서 쿠키와 IP 기반의 대략적 위치 정보가 Google에 전송됩니다. <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener">Google 애널리틱스 차단 브라우저 부가기능</a>으로 거부할 수 있습니다.</p>
+  <h2>Google AdSense와 제3자 쿠키</h2>
+  <p>이 사이트는 Google AdSense 광고를 게재합니다. Google을 포함한 제3자 광고 사업자는 쿠키를 사용해 이 사이트와 다른 사이트 방문 기록을 바탕으로 광고를 게재할 수 있습니다. <a href="https://adssettings.google.com/" rel="noopener">Google 광고 설정</a>에서 맞춤 광고를 끌 수 있고, <a href="https://www.aboutads.info/choices/" rel="noopener">aboutads.info</a>에서 다른 사업자의 맞춤 광고도 거부할 수 있습니다. 자세한 내용은 <a href="https://policies.google.com/technologies/ads" rel="noopener">Google 광고 정책</a>을 참고하세요.</p>
+  <h2>유럽경제지역·영국·스위스 방문자</h2>
+  <p>해당 지역에서는 Google 동의 모드에 따라 동의 전까지 광고·분석 저장소를 거부 상태로 시작하며, Google 인증 동의 관리 플랫폼(CMP)을 통해 동의를 받습니다. 동의는 언제든 철회할 수 있습니다.</p>
+  <h2>실시간 시세 호출</h2>
+  <p>시세판 페이지는 브라우저에서 이 사이트의 <code>/api/premium</code>을 호출합니다. 이 호출에는 개인정보가 담기지 않으며, 서버는 Cloudflare의 일반적인 접속 기록 외에 별도 기록을 남기지 않습니다.</p>
+  <h2>문의</h2>
+  <p>개인정보 관련 요청은 <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>로 보내 주세요. 다른 정책은 <a href="/terms/">이용약관</a>과 <a href="/disclaimer/">면책 고지</a>에 있습니다.</p>
+</Page>

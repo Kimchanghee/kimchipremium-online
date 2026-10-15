@@ -1,0 +1,52 @@
+---
+import Page from '../layouts/Page.astro';
+import { latest, coins, history, kst } from '../lib/data';
+import { fitTitle, fitDesc } from '../lib/text';
+const title = fitTitle(['김프 계산 방법과 데이터 출처: 업비트·바이낸스·ECB 환율', '김프 계산 방법과 데이터 출처: 업비트, 바이낸스, ECB']);
+const description = fitDesc([
+  '김프 전광판이 쓰는 데이터 출처(업비트 Open API, 바이낸스 공개 시세, Frankfurter ECB 기준환율), 수집 주기, 계산식, 코인 선정 기준, 실패 시 처리, 알려진 한계를 공개합니다. 숫자는 추정해 채우지 않습니다.',
+  '김프 전광판이 쓰는 데이터 출처(업비트 Open API, 바이낸스 공개 시세, ECB 기준환율), 수집 주기, 계산식, 코인 선정 기준, 실패 시 처리, 알려진 한계를 공개합니다. 숫자는 추정해 채우지 않습니다.',
+]);
+---
+<Page title={title} description={description} path="/methodology/" h1="김프 숫자는 어디서 오고 어떻게 계산하나요?" mark="계산 방법" updated="2026-10-16" og="methodology"
+  answer={`업비트 Open API의 원화 체결가, 바이낸스 공개 시세의 USDT 체결가, Frankfurter가 제공하는 ECB 기준 원/달러 환율과 업비트 USDT 가격을 같은 수집 회차에 받아 ${coins.length}개 코인의 김프를 두 기준으로 계산합니다. 받지 못한 값은 추정하지 않고 마지막 수집값과 그 시각을 그대로 보여 줍니다.`}>
+  <h2>데이터 출처</h2>
+  <table>
+    <thead><tr><th>값</th><th>출처</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>국내 원화 가격, 24시간 거래대금, 변동률</td><td><a href="https://docs.upbit.com/">업비트 Open API</a> <code>/v1/ticker</code></td><td>최근 체결가와 체결 시각</td></tr>
+      <tr><td>원화 호가 단위</td><td>업비트 Open API <code>/v1/orderbook/instruments</code></td><td>코인별 <code>tick_size</code></td></tr>
+      <tr><td>코인 한글 이름</td><td>업비트 Open API <code>/v1/market/all</code></td><td></td></tr>
+      <tr><td>해외 USDT 가격, 24시간 거래대금</td><td><a href="https://developers.binance.com/docs/binance-spot-api-docs/rest-api/market-data-endpoints">바이낸스 현물 공개 시세</a> <code>/api/v3/ticker/24hr</code></td><td>api.binance.com 실패 시 공식 공개 데이터 미러 data-api.binance.vision</td></tr>
+      <tr><td>원/달러 기준환율</td><td><a href="https://www.frankfurter.app/docs/">Frankfurter API</a> (ECB 기준환율)</td><td>ECB는 유로 기준으로 고시하므로 원/달러는 교차환율. 영업일 1회 고시</td></tr>
+      <tr><td>국내 USDT 가격</td><td>업비트 KRW-USDT 최근 체결가</td><td>테더 프리미엄 계산에 사용</td></tr>
+    </tbody>
+  </table>
+  <p>현재 게시된 값의 수집 시각은 {kst(latest.asOf)}, 기준환율 고시일은 {latest.fx.usdKrwDate}입니다. 수집 기록은 {history.since}부터 {history.readings.length}건이 쌓여 있으며, 그 이전 기간은 만들어 넣지 않았습니다.</p>
+
+  <h2>계산식</h2>
+  <ul>
+    <li>기준환율 김프(%) = (업비트 원화 가격 ÷ (바이낸스 USDT 가격 × ECB 원/달러) − 1) × 100</li>
+    <li>USDT 김프(%) = (업비트 원화 가격 ÷ (바이낸스 USDT 가격 × 업비트 USDT 가격) − 1) × 100</li>
+    <li>테더 프리미엄(%) = (업비트 USDT 가격 ÷ ECB 원/달러 − 1) × 100</li>
+    <li>평균은 단순 평균, 함께 표시하는 중앙값은 코인별 기준환율 김프의 중앙값입니다. 거래대금 가중 평균은 비트코인 비중이 지나치게 커서 쓰지 않습니다.</li>
+    <li>호가 단위 비율 = 업비트 tick_size ÷ 원화 가격 × 100. 이 값보다 작은 김프 변화는 호가 한 칸 차이일 수 있습니다.</li>
+  </ul>
+  <p>계산 코드는 손으로 계산한 사례(예: 105원 ÷ (1 USDT × 100원) − 1 = +5%)로 자동 검사합니다. 자세한 설명은 <a href="/guides/how-to-calculate/">김프 계산법</a>에 있습니다.</p>
+
+  <h2>코인 선정 기준</h2>
+  <p>업비트 원화 마켓과 바이낸스 USDT 현물 마켓에 모두 상장되어 같은 시각 가격을 비교할 수 있고, 업비트 원화 호가 단위가 김프 계산을 무의미하게 만들 만큼 크지 않은 주요 코인 {coins.length}개를 골랐습니다. 원화 가격이 1원 미만이라 호가 한 칸이 수십 %에 이르는 코인은 제외했습니다.</p>
+
+  <h2>갱신과 실시간 값</h2>
+  <p>페이지에 인쇄된 표는 운영자 PC에서 주기적으로 실행되는 수집 → 빌드 과정에서 만들어지며, 그 시각이 표 위에 표시됩니다. 시세판 페이지는 브라우저에서 <code>/api/premium</code>을 한 번 호출해 최대 30초 캐시된 실시간 값으로 표를 덮어씁니다. 이 호출이 실패하면 인쇄된 수집값을 그대로 두고 실패 사실을 표시합니다.</p>
+
+  <h2>실패와 한계</h2>
+  <ul>
+    <li>어느 출처라도 응답하지 않거나 범위를 벗어난 값을 주면 그 회차 전체를 버리고 마지막 정상 스냅샷을 유지합니다. 빈칸을 추정값으로 채우지 않습니다.</li>
+    <li>최근 체결가는 거래가 드문 순간에 실제 호가와 다를 수 있습니다.</li>
+    <li>ECB 기준환율은 주말·휴일에 갱신되지 않습니다.</li>
+    <li>수수료, 출금 수수료, 송금 비용, 세금은 계산에 들어가지 않습니다. 김프는 차익이 아닙니다.</li>
+    <li>입출금 중단 여부는 아직 수집하지 않습니다. 개별 코인의 큰 김프는 거래소 공지를 함께 확인하세요.</li>
+  </ul>
+  <p>이 사이트의 소개와 편집 원칙은 <a href="/about/">소개</a>, 오류 제보는 <a href="/contact/">문의</a>에서 받습니다.</p>
+</Page>
