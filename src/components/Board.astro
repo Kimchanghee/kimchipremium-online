@@ -1,0 +1,48 @@
+---
+import { coins, avgFx, avgUsdt, latest, kst } from '../lib/data';
+import { fmtPct, fmtKrw, fmtUsd, overseasKrw } from '../lib/calc.mjs';
+interface Props { limit?: number; caption?: string }
+const { limit, caption } = Astro.props;
+const rows = [...coins].sort((a, b) => b.upbitVolumeKrw24h - a.upbitVolumeKrw24h).slice(0, limit ?? coins.length);
+const scale = Math.max(3, ...coins.map((c) => Math.abs(c.premiumFx)));
+const cls = (p: number | null) => (p == null ? 'flat' : p > 0.005 ? 'up' : p < -0.005 ? 'down' : 'flat');
+const barW = (p: number) => Math.min(50, (Math.abs(p) / scale) * 50).toFixed(2) + '%';
+---
+<table class="board" data-board data-scale={scale}>
+  <caption>{caption ?? `업비트 원화 거래대금 순 · ${kst(latest.asOf)} 수집 · 빨강은 국내가 더 비쌈(김프), 파랑은 더 쌈(역프)`}</caption>
+  <thead>
+    <tr>
+      <th scope="col" style="text-align:left">코인</th>
+      <th scope="col">업비트 원화</th>
+      <th scope="col" class="hide-m">바이낸스 USDT</th>
+      <th scope="col" class="hide-m">해외가 원화 환산<br />(기준환율)</th>
+      <th scope="col">김프<br />기준환율</th>
+      <th scope="col">김프<br />USDT</th>
+      <th scope="col" class="hide-m bridge" style="text-align:center">역프 ← 0 → 김프 (±{scale.toFixed(1)}%)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {rows.map((c) => (
+      <tr data-sym={c.symbol}>
+        <th scope="row"><a href={`/coins/${c.symbol.toLowerCase()}/`}>{c.nameKo}</a><span class="sym">{c.symbol}</span></th>
+        <td data-k="krw">{fmtKrw(c.upbitKrw)}</td>
+        <td class="hide-m" data-k="usdt">{fmtUsd(c.binanceUsdt)}</td>
+        <td class="hide-m" data-k="ov">{fmtKrw(overseasKrw(c.binanceUsdt, latest.fx.usdKrw))}</td>
+        <td class={`p ${cls(c.premiumFx)}`} data-k="pfx">{fmtPct(c.premiumFx)}</td>
+        <td class={`p ${cls(c.premiumUsdt)}`} data-k="pusdt">{fmtPct(c.premiumUsdt)}</td>
+        <td class="hide-m bridge" aria-hidden="true"><div class="bar"><i data-k="bar" class={c.premiumFx >= 0 ? 'up' : 'down'} style={`width:${barW(c.premiumFx)}`}></i></div></td>
+      </tr>
+    ))}
+  </tbody>
+  {!limit && (
+    <tfoot>
+      <tr>
+        <th scope="row">{coins.length}개 평균</th>
+        <td></td><td class="hide-m"></td><td class="hide-m"></td>
+        <td class={`p ${cls(avgFx)}`} data-k="avgfx">{fmtPct(avgFx)}</td>
+        <td class={`p ${cls(avgUsdt)}`} data-k="avgusdt">{fmtPct(avgUsdt)}</td>
+        <td class="hide-m"></td>
+      </tr>
+    </tfoot>
+  )}
+</table>

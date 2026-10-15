@@ -1,0 +1,57 @@
+---
+import { latest, kst } from '../lib/data';
+---
+<p class="live" data-live data-state="snapshot" role="status" aria-live="polite">
+  수집 시각 {kst(latest.asOf)} 기준 표입니다. 실시간 값을 불러오는 중…
+</p>
+<noscript><p class="live">자바스크립트가 꺼져 있어 {kst(latest.asOf)}에 수집한 값을 그대로 보여 줍니다.</p></noscript>
+<script>
+  import { premiumPct, fmtPct, fmtKrw, fmtUsd, overseasKrw, mean } from '../lib/calc.mjs';
+  const status = document.querySelector<HTMLElement>('[data-live]');
+  const board = document.querySelector<HTMLElement>('[data-board]');
+  const snapshotText = status?.textContent?.split('.')[0] ?? '';
+  const cls = (p: number | null) => (p == null ? 'flat' : p > 0.005 ? 'up' : p < -0.005 ? 'down' : 'flat');
+  function set(row: Element, k: string, text: string, p?: number | null) {
+    const el = row.querySelector<HTMLElement>(`[data-k="${k}"]`);
+    if (!el) return;
+    el.textContent = text;
+    if (p !== undefined) el.className = `p ${cls(p)}`;
+  }
+  async function load() {
+    try {
+      const r = await fetch('/api/premium', { headers: { accept: 'application/json' } });
+      if (!r.ok) throw new Error(String(r.status));
+      const d = await r.json();
+      if (!Array.isArray(d.coins) || !d.coins.length) throw new Error('empty');
+      const scale = Number(board?.dataset.scale) || 3;
+      const fx: number | null = d.fx?.usdKrw ?? null;
+      const usdt: number | null = d.fx?.usdtKrw ?? null;
+      const pf: number[] = [], pu: number[] = [];
+      for (const c of d.coins) {
+        const row = board?.querySelector(`tr[data-sym="${c.symbol}"]`);
+        if (!row) continue;
+        const a = fx ? premiumPct(c.upbitKrw, c.binanceUsdt, fx) : null;
+        const b = usdt ? premiumPct(c.upbitKrw, c.binanceUsdt, usdt) : null;
+        if (a != null) pf.push(a);
+        if (b != null) pu.push(b);
+        set(row, 'krw', fmtKrw(c.upbitKrw));
+        set(row, 'usdt', fmtUsd(c.binanceUsdt));
+        set(row, 'ov', fx ? fmtKrw(overseasKrw(c.binanceUsdt, fx)) : '—');
+        set(row, 'pfx', fmtPct(a), a);
+        set(row, 'pusdt', fmtPct(b), b);
+        const bar = row.querySelector<HTMLElement>('[data-k="bar"]');
+        if (bar && a != null) { bar.className = a >= 0 ? 'up' : 'down'; bar.style.width = Math.min(50, (Math.abs(a) / scale) * 50).toFixed(2) + '%'; }
+      }
+      if (board) {
+        const foot = board.querySelector('tfoot tr');
+        if (foot) { const ma = mean(pf), mu = mean(pu); set(foot, 'avgfx', fmtPct(ma), ma); set(foot, 'avgusdt', fmtPct(mu), mu); }
+      }
+      const t = new Date(d.asOf).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false });
+      if (status) { status.dataset.state = 'live'; status.textContent = `실시간 반영: ${t} KST 조회값(최대 30초 캐시). 기준환율은 ECB ${d.fx?.usdKrwDate ?? ''} 고시값입니다.`; }
+      (window as any).kpTrack?.('tool_used', { tool: 'live_board' });
+    } catch {
+      if (status) { status.dataset.state = 'error'; status.textContent = `${snapshotText}. 실시간 조회에 실패해 수집 시점 값을 그대로 보여 줍니다.`; }
+    }
+  }
+  if (board) load();
+</script>

@@ -1,0 +1,84 @@
+---
+import Base from '../layouts/Base.astro';
+import Board from '../components/Board.astro';
+import LiveStatus from '../components/LiveStatus.astro';
+import { getCollection } from 'astro:content';
+import { site } from '../site.config';
+import { latest, coins, avgFx, avgUsdt, medFx, btc, kst } from '../lib/data';
+import { fmtPct, tickPct } from '../lib/calc.mjs';
+import { fitTitle, fitDesc } from '../lib/text';
+
+const fx = latest.fx;
+const title = fitTitle(['김치프리미엄 시세판: 코인별 김프·테더 프리미엄 오늘', '김치프리미엄 시세판: 코인별 김프와 테더 프리미엄', '김프 시세판: 코인별 김치프리미엄과 테더 프리미엄']);
+const description = fitDesc([
+  `업비트 원화 가격과 바이낸스 USDT 가격으로 ${coins.length}개 코인의 김치프리미엄을 ECB 기준환율과 업비트 테더 가격 두 기준으로 계산합니다. 수집 시각과 출처를 함께 표시합니다.`,
+  `업비트 원화 가격과 바이낸스 USDT 가격으로 ${coins.length}개 코인의 김치프리미엄을 ECB 기준환율과 업비트 테더 가격 두 기준으로 계산합니다. 수집 시각과 출처를 표시합니다.`,
+  `업비트 원화 가격과 바이낸스 USDT 가격으로 ${coins.length}개 코인 김치프리미엄을 ECB 기준환율과 업비트 테더 가격 두 기준으로 계산합니다. 수집 시각·출처 표시.`,
+]);
+const sorted = [...coins].sort((a, b) => b.premiumFx - a.premiumFx);
+const hi = sorted[0], lo = sorted[sorted.length - 1];
+const coarse = coins.map((c) => ({ c, t: c.tickKrw ? tickPct(c.upbitKrw, c.tickKrw) : null })).filter((x) => x.t != null && x.t >= 0.1).sort((a, b) => b.t! - a.t!);
+const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+const dataset = {
+  '@context': 'https://schema.org', '@type': 'Dataset', name: '코인별 김치프리미엄 스냅샷',
+  description: `업비트 원화 시세와 바이낸스 USDT 시세, ECB 기준 원/달러 환율, 업비트 USDT 가격으로 계산한 ${coins.length}개 코인의 김치프리미엄.`,
+  url: site.url + '/', dateModified: latest.asOf, temporalCoverage: latest.asOf, inLanguage: 'ko-KR', isAccessibleForFree: true,
+  creator: { '@id': `${site.url}/#org` },
+  isBasedOn: ['https://docs.upbit.com/', 'https://developers.binance.com/docs/binance-spot-api-docs/rest-api/market-data-endpoints', 'https://www.frankfurter.app/docs/'],
+  variableMeasured: ['업비트 원화 가격', '바이낸스 USDT 가격', '원/달러 기준환율', '업비트 USDT 가격', '김치프리미엄(%)'],
+};
+---
+<Base title={title} description={description} path="/" og="home" ld={[dataset]}>
+  <h1>지금 김치프리미엄은 몇 %인가요?</h1>
+  <p class="answer" id="answer">
+    {kst(latest.asOf)} 수집 기준, {coins.length}개 코인의 평균 김치프리미엄은 ECB 기준환율(1달러 {fx.usdKrw.toLocaleString('ko-KR')}원) 대비 <strong class={avgFx >= 0 ? 'up' : 'down'}>{fmtPct(avgFx)}</strong>,
+    업비트 테더 가격({fx.usdtKrw.toLocaleString('ko-KR')}원) 대비 <strong class={avgUsdt >= 0 ? 'up' : 'down'}>{fmtPct(avgUsdt)}</strong>입니다.
+    비트코인은 각각 {fmtPct(btc.premiumFx)}, {fmtPct(btc.premiumUsdt)}입니다.
+  </p>
+
+  <dl class="strip">
+    <div><dt>원/달러 기준환율</dt><dd>{fx.usdKrw.toLocaleString('ko-KR', { minimumFractionDigits: 2 })}</dd><small>ECB 고시 {fx.usdKrwDate} · Frankfurter</small></div>
+    <div><dt>업비트 USDT</dt><dd>{fx.usdtKrw.toLocaleString('ko-KR')}원</dd><small>{kst(fx.usdtKrwTime)} 체결가</small></div>
+    <div><dt>테더 프리미엄</dt><dd class={fx.tetherPremium >= 0 ? 'up' : 'down'}>{fmtPct(fx.tetherPremium)}</dd><small>USDT 원화가 ÷ 기준환율 − 1</small></div>
+    <div><dt>김프 중앙값(기준환율)</dt><dd class={medFx >= 0 ? 'up' : 'down'}>{fmtPct(medFx)}</dd><small>{coins.length}개 코인 · 평균 {fmtPct(avgFx)}</small></div>
+  </dl>
+  <LiveStatus />
+  <Board />
+
+  <div class="twocol">
+    <section>
+      <h2>왜 김프 숫자가 두 개인가요?</h2>
+      <p>
+        바이낸스 가격은 달러가 아니라 USDT(테더)로 매겨집니다. 이를 원화로 바꿀 때 은행권 환율을 쓰면 “기준환율 김프”, 업비트에서 실제 거래되는 USDT 원화 가격을 쓰면 “USDT 김프”가 됩니다.
+        지금은 USDT 자체가 기준환율보다 {fmtPct(fx.tetherPremium)} {fx.tetherPremium >= 0 ? '비싸게' : '싸게'} 거래되고 있어 두 숫자의 차이가 대부분 이 값으로 설명됩니다.
+        자세한 내용은 <a href="/guides/tether-premium/">테더 프리미엄 가이드</a>와 <a href="/methodology/">계산 방법</a>에 정리했습니다.
+      </p>
+      <h2>지금 김프가 가장 큰 코인과 작은 코인은?</h2>
+      <p>
+        기준환율 김프가 가장 큰 코인은 <a href={`/coins/${hi.symbol.toLowerCase()}/`}>{hi.nameKo}({hi.symbol})</a> {fmtPct(hi.premiumFx)},
+        가장 작은 코인은 <a href={`/coins/${lo.symbol.toLowerCase()}/`}>{lo.nameKo}({lo.symbol})</a> {fmtPct(lo.premiumFx)}입니다.
+        코인 사이의 차이는 입출금 상태, 거래량, 호가 단위 같은 시장 구조 때문에 생기며 차익을 보장하지 않습니다.
+      </p>
+      {coarse.length > 0 && (
+        <>
+          <h3>호가 단위 때문에 숫자가 거칠게 움직이는 코인</h3>
+          <p>
+            업비트 원화 호가 한 칸이 가격의 0.1% 이상인 코인은 김프가 그 단위로만 바뀝니다:
+            {coarse.map((x, i) => <>{i > 0 && ', '}<a href={`/coins/${x.c.symbol.toLowerCase()}/`}>{x.c.nameKo}</a> {x.t!.toFixed(2)}%</>)}.
+            이런 코인의 0.1~1% 차이는 실제 가격 차이라기보다 호가 단위의 흔적일 수 있습니다.
+          </p>
+        </>
+      )}
+    </section>
+    <aside>
+      <h2>가이드</h2>
+      <ul class="list">
+        {guides.map((g) => <li><a href={`/guides/${g.id}/`}>{g.data.h1}</a></li>)}
+      </ul>
+      <h2>계산기</h2>
+      <p>원하는 가격과 환율을 직접 넣어 김프를 계산하거나, 목표 김프에 해당하는 원화 가격을 거꾸로 구할 수 있습니다. <a href="/calculator/">김프 계산기 열기</a></p>
+    </aside>
+  </div>
+  <div class="ad" aria-label="광고 영역"></div>
+  <p class="note">이 표는 투자나 차익거래 권유가 아닙니다. 해외 거래소 이용과 해외 송금에는 외국환거래법·특정금융정보법상 제약이 있습니다. <a href="/guides/overseas-exchange-legal/">해외 거래소 이용 시 법적 유의사항</a>과 <a href="/disclaimer/">면책 고지</a>를 확인하세요.</p>
+</Base>
