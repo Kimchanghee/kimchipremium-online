@@ -5,7 +5,7 @@ Branch: v2-cloudflare-static. SECURITY HOLD: old source not read or reused. Old 
 ## Milestones
 - [x] M0 Old tree removed (2576205)
 - [ ] M1 Astro 5 skeleton, site.config.ts, wrangler.jsonc (+ /api/premium Worker), PROGRESS pushed
-- [ ] M2 refresh.mjs (Upbit KRW, Binance USDT, Frankfurter USD/KRW + Upbit KRW-USDT) + snapshot
+- [x] M2 refresh.mjs (Upbit KRW + tick_size, Binance 24hr w/ data-api.binance.vision fallback, Frankfurter USD/KRW, Upbit KRW-USDT) + snapshot + history.json; src/lib/calc.mjs + tests 6/6; worker/index.mjs (/api/premium, Cache 30 s, 503 fallback); scripts/refresh-build.ps1
 - [ ] M3 Home board, ~20 coin pages, calculator, /api/premium worker
 - [ ] M4 >=10 Korean guides + legal pages + short English page
 - [ ] M5 SEO/NEO: OG, sitemap, robots, llms.txt, LD, RSS, naver meta, gate.mjs
