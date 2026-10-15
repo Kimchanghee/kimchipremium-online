@@ -14,4 +14,4 @@ Branch: v2-cloudflare-static. SECURITY HOLD: old source not read or reused. Old 
 ## Notes
 - Concept: 환전소 시세 전광판 / 두 시장 사이의 다리.
 
-- Next (M3): src/pages/index.astro (board + live island), coins/index + coins/[sym], calculator, then content collection + guides.
+- M3 partial: index.astro, coins/index + coins/[sym] (rank, tick, volume, recorded series; empty state), calculator.astro (calc + reverse + invalid state), guides/index + [slug] written. NOT YET BUILT. Next: 10 guides in src/content/guides (slugs referenced: what-is-kimchi-premium, how-to-calculate, why-kimchi-premium-happens, reverse-premium, tether-premium, exchange-rate-basics, arbitrage-risks, overseas-exchange-legal, travel-rule, crypto-tax-korea), then legal pages, en/, 404, llms/robots/rss/sitemaps, og.mjs, gate.mjs (copy DCN, SITE/LANG=ko).

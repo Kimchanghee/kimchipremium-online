@@ -1,0 +1,47 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { site } from '../../site.config';
+
+export async function getStaticPaths() {
+  const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+  return guides.map((g, i) => ({ params: { slug: g.id }, props: { g, next: guides[(i + 1) % guides.length], prev: guides[(i - 1 + guides.length) % guides.length] } }));
+}
+const { g, next, prev } = Astro.props;
+const { Content } = await render(g);
+const d = g.data;
+const path = `/guides/${g.id}/`;
+const article = {
+  '@context': 'https://schema.org', '@type': 'Article', headline: d.h1, description: d.description,
+  datePublished: d.published, dateModified: d.updated, inLanguage: 'ko-KR', mainEntityOfPage: site.url + path,
+  image: `${site.url}/og/guide-${g.id}.png`, author: { '@id': `${site.url}/#org` }, publisher: { '@id': `${site.url}/#org` },
+  citation: d.sources.map((s) => s.url),
+};
+const faq = d.faq.length
+  ? { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: d.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }
+  : null;
+---
+<Base title={d.title} description={d.description} path={path} og={`guide-${g.id}`} type="article" modified={d.updated}
+  crumbs={[{ name: '가이드', path: '/guides/' }, { name: d.kicker, path }]} ld={faq ? [article, faq] : [article]}>
+  <article class="doc">
+    <p class="doc__meta"><span>{d.kicker}</span> · 작성 <time datetime={d.published}>{d.published}</time> · 수정 <time datetime={d.updated}>{d.updated}</time> · 데이터 기준 {d.data_asof}</p>
+    <h1>{d.h1}</h1>
+    <p class="answer" id="answer">{d.answer}</p>
+    <div class="prose"><Content /></div>
+    {d.faq.length > 0 && (
+      <section>
+        <h2>자주 묻는 질문</h2>
+        <dl class="faq">{d.faq.map((f) => <><dt>{f.q}</dt><dd>{f.a}</dd></>)}</dl>
+      </section>
+    )}
+    <section class="sources">
+      <h2>출처</h2>
+      <ul>{d.sources.map((s) => <li><a href={s.url} rel="noopener">{s.title}</a></li>)}</ul>
+      <p class="muted">이 글은 정보 제공용이며 투자·세무·법률 자문이 아닙니다. 현재 수치는 <a href="/">김프 시세판</a>, 계산식은 <a href="/methodology/">계산 방법</a>에서 확인하세요.</p>
+    </section>
+    <nav aria-label="다른 가이드" class="list" style="margin-top:28px">
+      <p>이전: <a href={`/guides/${prev.id}/`}>{prev.data.h1}</a></p>
+      <p>다음: <a href={`/guides/${next.id}/`}>{next.data.h1}</a></p>
+    </nav>
+  </article>
+</Base>

@@ -1,0 +1,97 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../site.config';
+import { btc, latest, kst } from '../lib/data';
+import { fmtPct, premiumPct } from '../lib/calc.mjs';
+import { fitTitle, fitDesc } from '../lib/text';
+const fx = latest.fx;
+const title = fitTitle(['김프 계산기: 원화 가격·USDT 가격·환율로 프리미엄 계산', '김프 계산기: 원화 가격, USDT 가격, 환율로 프리미엄 계산']);
+const description = fitDesc([
+  '국내 원화 가격, 해외 USDT 가격, 적용 환율을 넣으면 김치프리미엄을 계산하고, 목표 프리미엄에 해당하는 원화 가격도 거꾸로 구합니다. 계산식과 검산 예시를 함께 보여 줍니다.',
+  '국내 원화 가격, 해외 USDT 가격, 적용 환율을 넣으면 김치프리미엄을 계산하고 목표 프리미엄에 해당하는 원화 가격도 거꾸로 구합니다. 계산식과 검산 예시를 함께 보여 줍니다.',
+]);
+const ex = premiumPct(btc.upbitKrw, btc.binanceUsdt, fx.usdKrw);
+const app = {
+  '@context': 'https://schema.org', '@type': 'WebApplication', name: '김프 계산기', url: `${site.url}/calculator/`,
+  applicationCategory: 'FinanceApplication', operatingSystem: 'Any', inLanguage: 'ko-KR', isAccessibleForFree: true,
+  description: '국내 원화 가격, 해외 USDT 가격, 환율로 김치프리미엄과 목표 프리미엄 가격을 계산합니다.',
+};
+---
+<Base title={title} description={description} path="/calculator/" og="calculator" ld={[app]} crumbs={[{ name: '김프 계산기', path: '/calculator/' }]}>
+  <h1>김치프리미엄은 어떻게 계산하나요?</h1>
+  <p class="answer" id="answer">김프(%) = 국내 원화 가격 ÷ (해외 USDT 가격 × 적용 환율) − 1 을 백분율로 바꾼 값입니다. 아래 칸에 세 숫자를 넣으면 바로 계산되고, 처음 값은 {kst(latest.asOf)}에 수집한 비트코인 가격과 ECB 기준환율입니다.</p>
+  <form class="calc" data-calc novalidate>
+    <div>
+      <label for="krw">국내 원화 가격 (원)</label>
+      <input id="krw" name="krw" inputmode="decimal" autocomplete="off" value={String(btc.upbitKrw)} aria-describedby="krw-h" />
+      <p class="hint" id="krw-h">예: 업비트 BTC 체결가</p>
+    </div>
+    <div>
+      <label for="usdt">해외 가격 (USDT)</label>
+      <input id="usdt" name="usdt" inputmode="decimal" autocomplete="off" value={String(btc.binanceUsdt)} aria-describedby="usdt-h" />
+      <p class="hint" id="usdt-h">예: 바이낸스 BTC/USDT</p>
+    </div>
+    <div>
+      <label for="rate">적용 환율 (원/달러 또는 원/USDT)</label>
+      <input id="rate" name="rate" inputmode="decimal" autocomplete="off" value={String(fx.usdKrw)} aria-describedby="rate-h" />
+      <p class="hint" id="rate-h">
+        <button type="button" data-rate={fx.usdKrw}>ECB {fx.usdKrw}</button>
+        <button type="button" data-rate={fx.usdtKrw}>업비트 USDT {fx.usdtKrw}</button>
+      </p>
+    </div>
+    <div>
+      <label for="target">목표 김프 (%) — 역산</label>
+      <input id="target" name="target" inputmode="decimal" autocomplete="off" value="0" aria-describedby="target-h" />
+      <p class="hint" id="target-h">이 김프가 되려면 원화 가격이 얼마여야 하는지 계산</p>
+    </div>
+    <div class="result" aria-live="polite">
+      <p class="muted">계산 결과</p>
+      <output name="out" for="krw usdt rate" data-out>{fmtPct(ex)}</output>
+      <p data-detail>해외 가격 원화 환산 {Math.round(btc.binanceUsdt * fx.usdKrw).toLocaleString('ko-KR')}원 대비 국내 가격 차이입니다.</p>
+      <p data-reverse class="muted"></p>
+    </div>
+  </form>
+
+  <h2>계산 예시로 검산해 볼까요?</h2>
+  <p>국내 가격 105원, 해외 가격 1 USDT, 환율 100원이면 해외 가격의 원화 환산은 100원이고 김프는 105 ÷ 100 − 1 = +5%입니다. 국내 가격이 95원이면 −5%, 즉 역프리미엄입니다. 이 사이트의 계산 코드는 이런 손계산 사례로 자동 검사합니다.</p>
+  <h2>어떤 환율을 넣어야 하나요?</h2>
+  <p>은행 간 기준환율(여기서는 ECB가 고시한 원/달러)을 넣으면 “달러 대비 국내 코인이 얼마나 비싼가”를, 업비트 USDT 가격을 넣으면 “국내에서 테더로 바꿔 해외 가격과 비교했을 때 얼마나 비싼가”를 봅니다. 두 기준의 차이는 <a href="/guides/tether-premium/">테더 프리미엄</a>입니다. 실제 송금에 적용되는 은행 환율은 수수료(스프레드)가 붙어 이보다 불리합니다(<a href="/guides/exchange-rate-basics/">환율 기준 정리</a>).</p>
+  <p class="note">계산 결과는 수수료, 출금 수수료, 이동 시간, 송금 한도, 세금을 반영하지 않습니다. 차익을 뜻하지 않으며 투자·차익거래 권유가 아닙니다. <a href="/guides/arbitrage-risks/">차익거래가 어려운 이유</a>를 함께 보세요.</p>
+</Base>
+
+<script>
+  import { premiumPct, krwForPremium, fmtPct } from '../lib/calc.mjs';
+  const form = document.querySelector<HTMLFormElement>('[data-calc]')!;
+  const out = form.querySelector<HTMLOutputElement>('[data-out]')!;
+  const detail = form.querySelector<HTMLElement>('[data-detail]')!;
+  const rev = form.querySelector<HTMLElement>('[data-reverse]')!;
+  const num = (id: string) => {
+    const el = form.querySelector<HTMLInputElement>('#' + id)!;
+    const v = Number(el.value.replace(/[,\s원$%]/g, ''));
+    const ok = el.value.trim() !== '' && Number.isFinite(v);
+    el.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    return ok ? v : NaN;
+  };
+  let used = false;
+  function run() {
+    const krw = num('krw'), usdt = num('usdt'), rate = num('rate'), target = num('target');
+    const p = premiumPct(krw, usdt, rate);
+    if (p == null) {
+      out.textContent = '—';
+      out.className = 'err';
+      detail.innerHTML = '<span class="err">세 칸 모두 0보다 큰 숫자를 넣어 주세요.</span>';
+      rev.textContent = '';
+      return;
+    }
+    out.textContent = fmtPct(p, 3);
+    out.className = p > 0 ? 'up' : p < 0 ? 'down' : '';
+    detail.textContent = `해외 가격 원화 환산 ${Math.round(usdt * rate).toLocaleString('ko-KR')}원 대비 ${Math.round(krw - usdt * rate).toLocaleString('ko-KR')}원 차이입니다.`;
+    const r = krwForPremium(usdt, rate, target);
+    rev.textContent = r == null ? '목표 김프 칸에 숫자를 넣으면 역산합니다.' : `목표 김프 ${fmtPct(target)}에 해당하는 원화 가격: ${Math.round(r).toLocaleString('ko-KR')}원`;
+    if (!used) { used = true; (window as any).kpTrack?.('tool_used', { tool: 'calculator' }); }
+  }
+  form.addEventListener('input', run);
+  form.addEventListener('submit', (e) => { e.preventDefault(); run(); });
+  form.querySelectorAll<HTMLButtonElement>('[data-rate]').forEach((b) => b.addEventListener('click', () => { form.querySelector<HTMLInputElement>('#rate')!.value = b.dataset.rate!; run(); }));
+  run();
+</script>

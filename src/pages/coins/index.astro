@@ -1,0 +1,17 @@
+---
+import Base from '../../layouts/Base.astro';
+import Board from '../../components/Board.astro';
+import { coins, latest, kst } from '../../lib/data';
+import { fitTitle, fitDesc } from '../../lib/text';
+const title = fitTitle([`코인별 김치프리미엄 목록: ${coins.length}개 코인 업비트·바이낸스 비교`, `코인별 김치프리미엄: ${coins.length}개 코인 업비트·바이낸스 비교`]);
+const description = fitDesc([
+  `비트코인, 이더리움, 리플 등 업비트 원화 마켓과 바이낸스 USDT 마켓에 모두 상장된 ${coins.length}개 코인의 김치프리미엄을 한 표로 비교하고, 코인별 상세 페이지로 이동할 수 있습니다.`,
+  `비트코인, 이더리움, 리플 등 업비트 원화 마켓과 바이낸스 USDT 마켓에 모두 상장된 ${coins.length}개 코인의 김치프리미엄을 한 표로 비교하고 코인별 상세 페이지로 이동합니다.`,
+]);
+---
+<Base title={title} description={description} path="/coins/" og="coin" crumbs={[{ name: '코인별 김프', path: '/coins/' }]} modified={latest.asOf}>
+  <h1>어떤 코인의 김프를 볼 수 있나요?</h1>
+  <p class="answer" id="answer">업비트 원화 마켓과 바이낸스 USDT 마켓에 모두 상장되어 같은 시각 가격을 비교할 수 있는 {coins.length}개 코인을 다룹니다. 코인 이름을 누르면 호가 단위, 거래대금, 수집 기록이 담긴 상세 페이지로 이동합니다. 아래 값은 {kst(latest.asOf)} 수집분입니다.</p>
+  <Board caption={`업비트 원화 거래대금 순 · ${kst(latest.asOf)} 수집`} />
+  <p>코인 선정 기준과 계산식은 <a href="/methodology/">계산 방법</a>에, 김프의 뜻은 <a href="/guides/what-is-kimchi-premium/">김치프리미엄이란</a>에 정리했습니다.</p>
+</Base>

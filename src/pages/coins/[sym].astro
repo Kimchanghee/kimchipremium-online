@@ -1,0 +1,110 @@
+---
+import Base from '../../layouts/Base.astro';
+import { site } from '../../site.config';
+import { coins, latest, avgFx, kst, seriesFor, history, type Coin } from '../../lib/data';
+import { fmtPct, fmtKrw, fmtUsd, overseasKrw, tickPct } from '../../lib/calc.mjs';
+import { fitTitle, fitDesc } from '../../lib/text';
+
+export function getStaticPaths() {
+  return coins.map((c) => ({ params: { sym: c.symbol.toLowerCase() }, props: { c } }));
+}
+const { c } = Astro.props as { c: Coin };
+const path = `/coins/${c.symbol.toLowerCase()}/`;
+const fx = latest.fx;
+const name = `${c.nameKo}(${c.symbol})`;
+const title = fitTitle([
+  `${c.nameKo} 김프 오늘: ${c.symbol} 업비트·바이낸스 가격 차이`,
+  `${c.nameKo} 김프 오늘: ${c.symbol} 업비트와 바이낸스 가격 차이 비교`,
+  `${c.nameKo} 김치프리미엄 오늘: ${c.symbol} 업비트·바이낸스 가격 차이`,
+  `${c.nameKo} 김프: ${c.symbol} 업비트·바이낸스 가격 차이`,
+  `${c.nameKo} 김프 ${c.symbol}: 업비트·바이낸스 가격 차이`,
+]);
+const pf = fmtPct(c.premiumFx), pu = fmtPct(c.premiumUsdt);
+const description = fitDesc([
+  `${name}의 업비트 원화 가격과 바이낸스 USDT 가격을 비교한 김치프리미엄입니다. 수집 시점 기준환율 대비 ${pf}, 테더 가격 대비 ${pu}이며 호가 단위와 거래대금도 함께 봅니다.`,
+  `${name} 업비트 원화 가격과 바이낸스 USDT 가격을 비교한 김치프리미엄입니다. 수집 시점 기준환율 대비 ${pf}, 테더 가격 대비 ${pu}이며 호가 단위와 거래대금도 함께 봅니다.`,
+  `${name} 업비트 원화 가격과 바이낸스 USDT 가격을 비교한 김치프리미엄입니다. 수집 시점 기준환율 대비 ${pf}, 테더 대비 ${pu}이며 호가 단위와 거래대금도 함께 봅니다.`,
+  `${name} 업비트 원화가와 바이낸스 USDT 가격을 비교한 김치프리미엄. 수집 시점 기준환율 대비 ${pf}, 테더 대비 ${pu}이며 호가 단위와 거래대금도 함께 봅니다.`,
+  `${name} 업비트 원화가와 바이낸스 USDT가를 비교한 김치프리미엄. 수집 시점 기준환율 대비 ${pf}, 테더 대비 ${pu}. 호가 단위와 거래대금도 함께 봅니다.`,
+  `${name} 업비트 원화가와 바이낸스 USDT가를 비교한 김치프리미엄. 수집 시점 기준환율 대비 ${pf}, 테더 대비 ${pu}. 호가 단위, 거래대금도 함께 봅니다.`,
+  `${name}의 업비트 원화 가격과 바이낸스 USDT 가격을 비교한 김치프리미엄입니다. 수집 시점 기준환율 대비 ${pf}, 테더 가격 대비 ${pu}이며 호가 단위와 거래대금, 기록 추이를 함께 봅니다.`,
+  `${name}의 업비트 원화 가격과 바이낸스 USDT 가격을 비교한 김치프리미엄입니다. 수집 시점 기준환율 대비 ${pf}, 테더 가격 대비 ${pu}이며, 호가 단위와 양쪽 거래대금, 기록된 추이를 함께 봅니다.`,
+]);
+const ov = overseasKrw(c.binanceUsdt, fx.usdKrw)!;
+const tp = c.tickKrw ? tickPct(c.upbitKrw, c.tickKrw) : null;
+const rank = [...coins].sort((a, b) => b.premiumFx - a.premiumFx).findIndex((x) => x.symbol === c.symbol) + 1;
+const vsAvg = c.premiumFx - avgFx;
+const binKrwVol = c.binanceQuoteVolume24h * fx.usdKrw;
+const volRatio = c.upbitVolumeKrw24h / binKrwVol;
+const series = seriesFor(c.symbol);
+const W = 640, H = 160, P = 24;
+let spark = '';
+if (series.length >= 2) {
+  const vs = series.map((s) => s.v);
+  const lo = Math.min(0, ...vs), hi = Math.max(0, ...vs);
+  const span = hi - lo || 1;
+  const t0 = Date.parse(series[0].t), t1 = Date.parse(series.at(-1)!.t);
+  const x = (t: string) => P + ((Date.parse(t) - t0) / (t1 - t0 || 1)) * (W - 2 * P);
+  const y = (v: number) => P + (1 - (v - lo) / span) * (H - 2 * P);
+  spark = series.map((s, i) => `${i ? 'L' : 'M'}${x(s.t).toFixed(1)},${y(s.v).toFixed(1)}`).join(' ');
+  spark = `<line x1="${P}" x2="${W - P}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}" stroke="#18241f" stroke-width="1.5"/><path d="${spark}" fill="none" stroke="#b5122b" stroke-width="2.5"/><text x="${P}" y="16" font-size="12" fill="#4f5b56">최고 ${fmtPct(hi)} · 최저 ${fmtPct(lo)} · 0% 기준선</text>`;
+}
+const vals = series.map((s) => s.v);
+const others = coins.filter((x) => x.symbol !== c.symbol).sort((a, b) => b.upbitVolumeKrw24h - a.upbitVolumeKrw24h).slice(0, 6);
+const dataset = {
+  '@context': 'https://schema.org', '@type': 'Dataset', name: `${name} 김치프리미엄 기록`,
+  description: `${name}의 업비트 원화 가격, 바이낸스 USDT 가격, 원/달러 기준환율로 계산한 김치프리미엄 스냅샷과 ${history.since}부터의 수집 기록.`,
+  url: site.url + path, dateModified: latest.asOf, inLanguage: 'ko-KR', isAccessibleForFree: true, creator: { '@id': `${site.url}/#org` },
+};
+---
+<Base title={title} description={description} path={path} og="coin" ld={[dataset]} modified={latest.asOf}
+  crumbs={[{ name: '코인별 김프', path: '/coins/' }, { name: c.nameKo, path }]}>
+  <h1>{c.nameKo}({c.symbol}) 김치프리미엄은 지금 몇 %인가요?</h1>
+  <p class="answer" id="answer">
+    {kst(latest.asOf)} 수집 기준 {name}은 업비트에서 {fmtKrw(c.upbitKrw)}, 바이낸스에서 {fmtUsd(c.binanceUsdt)}(USDT)에 거래돼
+    김치프리미엄이 ECB 기준환율 대비 <strong class={c.premiumFx >= 0 ? 'up' : 'down'}>{pf}</strong>, 업비트 테더 가격 대비 <strong class={c.premiumUsdt >= 0 ? 'up' : 'down'}>{pu}</strong>입니다.
+  </p>
+  <div class="pair" role="group" aria-label="두 시장 가격 비교">
+    <div><p class="lbl">업비트 원화</p><p class="val">{fmtKrw(c.upbitKrw)}</p><p class="muted">{kst(c.upbitTradeTime)} 체결 · 24시간 {fmtPct(c.upbitChange24h)}</p></div>
+    <div class="mid"><p class="lbl">김프(기준환율)</p><p class={`val ${c.premiumFx >= 0 ? 'up' : 'down'}`}>{pf}</p><p class="muted">USDT 기준 {pu}</p></div>
+    <div><p class="lbl">바이낸스 → 원화 환산</p><p class="val">{fmtKrw(ov)}</p><p class="muted">{fmtUsd(c.binanceUsdt)} × {fx.usdKrw.toLocaleString('ko-KR')}원</p></div>
+  </div>
+
+  <h2>{c.nameKo} 김프는 다른 코인과 비교해 높은 편인가요?</h2>
+  <p>
+    같은 시각 {coins.length}개 코인 가운데 {name}의 기준환율 김프는 높은 순으로 {rank}번째입니다.
+    전체 평균 {fmtPct(avgFx)}보다 {Math.abs(vsAvg).toFixed(2)}%p {vsAvg >= 0 ? '높습니다' : '낮습니다'}.
+    여러 코인이 함께 높다면 원화 시장 전체의 수급(환율·테더 가격) 영향이, 이 코인만 튄다면 입출금 상태나 개별 거래량 같은 코인 고유 요인이 더 클 가능성이 있습니다. <a href="/guides/why-kimchi-premium-happens/">김프가 생기는 이유</a>를 참고하세요.
+  </p>
+
+  <h2>호가 단위가 {c.nameKo} 김프 숫자에 주는 영향은?</h2>
+  {tp != null ? (
+    <p>
+      업비트 {c.symbol} 원화 마켓의 호가 단위는 {c.tickKrw!.toLocaleString('ko-KR')}원으로, 현재 가격의 {tp < 0.01 ? tp.toFixed(4) : tp.toFixed(3)}%입니다.
+      {tp >= 0.1 ? ` 한 칸 차이만으로도 김프가 약 ${tp.toFixed(2)}%p 움직이므로 이보다 작은 김프 변화는 의미 있는 가격 차이로 보기 어렵습니다.` : ' 김프 계산에 미치는 영향은 무시해도 될 만큼 작습니다.'}
+    </p>
+  ) : <p>업비트가 이 마켓의 호가 단위를 반환하지 않아 표시하지 않습니다.</p>}
+
+  <h2>양쪽 거래소의 거래대금은 어느 정도인가요?</h2>
+  <p>
+    최근 24시간 거래대금은 업비트 약 {Math.round(c.upbitVolumeKrw24h / 1e8).toLocaleString('ko-KR')}억 원,
+    바이낸스 {c.symbol}/USDT 약 {Math.round(c.binanceQuoteVolume24h / 1e6).toLocaleString('ko-KR')}백만 USDT(기준환율 환산 약 {Math.round(binKrwVol / 1e8).toLocaleString('ko-KR')}억 원)입니다.
+    업비트 거래대금은 바이낸스 이 마켓의 {volRatio >= 1 ? `${volRatio.toFixed(1)}배` : `${(volRatio * 100).toFixed(0)}%`} 수준입니다. 거래대금이 작은 쪽 가격은 소수의 주문에도 크게 움직일 수 있습니다.
+  </p>
+
+  <h2>{c.nameKo} 김프는 그동안 어떻게 움직였나요?</h2>
+  {series.length >= 2 ? (
+    <>
+      <svg class="spark" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${name} 기준환율 김프 기록 ${series.length}건, ${history.since}부터`} set:html={spark} />
+      <p>{history.since}부터 이 사이트가 직접 수집한 {series.length}건의 기록입니다. 범위는 {fmtPct(Math.min(...vals))} ~ {fmtPct(Math.max(...vals))}입니다. 수집 이전 기간은 만들어 넣지 않았습니다.</p>
+    </>
+  ) : (
+    <p>이 사이트는 {history.since}부터 김프를 직접 수집하기 시작했고, 아직 {c.nameKo}의 기록은 {series.length}건뿐이라 추이를 그리지 않았습니다. 수집 이전 기간을 추정해 채우지 않습니다. 기록이 쌓이면 이 자리에 그래프가 표시됩니다.</p>
+  )}
+  <div class="ad" aria-label="광고 영역"></div>
+  <h2>다른 코인 김프</h2>
+  <ul class="list">
+    {others.map((o) => <li><a href={`/coins/${o.symbol.toLowerCase()}/`}>{o.nameKo}({o.symbol})</a> <span class={o.premiumFx >= 0 ? 'up' : 'down'}>{fmtPct(o.premiumFx)}</span></li>)}
+  </ul>
+  <p>전체 표는 <a href="/">김프 시세판</a>, 직접 계산은 <a href="/calculator/">김프 계산기</a>에서 할 수 있습니다. 데이터 출처: 업비트 Open API, {latest.binance.source}, Frankfurter(ECB {fx.usdKrwDate}). 투자·차익거래 권유가 아닙니다.</p>
+</Base>

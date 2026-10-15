@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { fitTitle, fitDesc } from '../../lib/text';
+const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+const title = fitTitle(['김치프리미엄 가이드: 개념·계산·역프·테더·법·세금 정리', '김치프리미엄 가이드: 개념, 계산, 역프, 테더, 법, 세금']);
+const description = fitDesc([
+  '김치프리미엄의 뜻과 계산식, 생기는 이유, 역프리미엄, 테더 프리미엄, 해외 거래소 이용 시 법적 유의사항, 가상자산 과세까지 공식 자료 출처와 함께 정리한 가이드 모음입니다.',
+  '김치프리미엄의 뜻과 계산식, 생기는 이유, 역프리미엄, 테더 프리미엄, 해외 거래소 이용 시 법적 유의사항, 가상자산 과세를 공식 자료 출처와 함께 정리한 가이드입니다.',
+]);
+---
+<Base title={title} description={description} path="/guides/" og="guides" crumbs={[{ name: '가이드', path: '/guides/' }]}>
+  <h1>김치프리미엄, 무엇부터 알아야 하나요?</h1>
+  <p class="answer" id="answer">김치프리미엄은 같은 코인이 국내 원화 거래소에서 해외보다 비싸게 거래되는 비율입니다. 아래 {guides.length}편은 개념과 계산식에서 시작해 생기는 이유, 역프와 테더 프리미엄, 법·세금 유의사항 순서로 읽도록 배열했습니다.</p>
+  <ul class="list">
+    {guides.map((g) => (
+      <li><a href={`/guides/${g.id}/`}>{g.data.h1}</a><p>{g.data.answer}</p></li>
+    ))}
+  </ul>
+  <p>숫자는 <a href="/">오늘의 김프 시세판</a>, 직접 계산은 <a href="/calculator/">김프 계산기</a>에서 할 수 있습니다.</p>
+</Base>
