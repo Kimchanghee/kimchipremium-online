@@ -47,7 +47,7 @@ if (series.length >= 2) {
   const x = (t: string) => P + ((Date.parse(t) - t0) / (t1 - t0 || 1)) * (W - 2 * P);
   const y = (v: number) => P + (1 - (v - lo) / span) * (H - 2 * P);
   spark = series.map((s, i) => `${i ? 'L' : 'M'}${x(s.t).toFixed(1)},${y(s.v).toFixed(1)}`).join(' ');
-  spark = `<line x1="${P}" x2="${W - P}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}" stroke="#18241f" stroke-width="1.5"/><path d="${spark}" fill="none" stroke="#b5122b" stroke-width="2.5"/><text x="${P}" y="16" font-size="12" fill="#4f5b56">최고 ${fmtPct(hi)} · 최저 ${fmtPct(lo)} · 0% 기준선</text>`;
+  spark = `<line x1="${P}" x2="${W - P}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}" stroke="#18241f" stroke-width="1.5"/><path d="${spark}" fill="none" stroke="#b5122b" stroke-width="2.5"/><text x="${P}" y="16" font-size="12" fill="#4f5b56">최고 ${fmtPct(Math.max(...vs))} · 최저 ${fmtPct(Math.min(...vs))} · 가로선 = 0%</text>`;
 }
 const vals = series.map((s) => s.v);
 const others = coins.filter((x) => x.symbol !== c.symbol).sort((a, b) => b.upbitVolumeKrw24h - a.upbitVolumeKrw24h).slice(0, 6);
