@@ -7,8 +7,7 @@ import { fitTitle, fitDesc } from '../lib/text';
 const fx = latest.fx;
 const title = fitTitle(['김프 계산기: 원화 가격·USDT 가격·환율로 프리미엄 계산', '김프 계산기: 원화 가격, USDT 가격, 환율로 프리미엄 계산']);
 const description = fitDesc([
-  '국내 원화 가격, 해외 USDT 가격, 적용 환율을 넣으면 김치프리미엄을 계산하고, 목표 프리미엄에 해당하는 원화 가격도 거꾸로 구합니다. 계산식과 검산 예시를 함께 보여 줍니다.',
-  '국내 원화 가격, 해외 USDT 가격, 적용 환율을 넣으면 김치프리미엄을 계산하고 목표 프리미엄에 해당하는 원화 가격도 거꾸로 구합니다. 계산식과 검산 예시를 함께 보여 줍니다.',
+  '원화 가격, 해외 USDT 가격, 적용 환율을 넣으면 김치프리미엄을 계산하고 목표 프리미엄에 맞는 원화 가격도 역산합니다. 계산식과 검산 예시를 함께 보여 줍니다.',
 ]);
 const ex = premiumPct(btc.upbitKrw, btc.binanceUsdt, fx.usdKrw);
 const app = {

@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import { site } from '../../site.config';
+import { latest, coins, avgFx, avgUsdt, btc, kst } from '../../lib/data';
+import { fmtPct } from '../../lib/calc.mjs';
+import { fit } from '../../lib/text';
+
+const fx = latest.fx;
+const title = fit(['Kimchi Premium Today: Upbit vs Binance, Coin by Coin', 'Kimchi Premium Today: Upbit vs Binance by Coin (KRW)'], 50, 60);
+const description = fit([
+  `Korean-language board comparing Upbit KRW prices with Binance USDT prices for ${coins.length} coins, using the ECB USD/KRW reference rate and Upbit's USDT price. English summary.`,
+  `Korean board comparing Upbit KRW prices with Binance USDT prices for ${coins.length} coins, using the ECB USD/KRW reference rate and Upbit's USDT price. English summary page.`,
+  `Korean board comparing Upbit KRW and Binance USDT prices for ${coins.length} coins, against both the ECB USD/KRW reference rate and Upbit's USDT price. English summary.`,
+], 150, 160);
+const top = [...coins].sort((a, b) => b.upbitVolumeKrw24h - a.upbitVolumeKrw24h).slice(0, 8);
+const page = { '@context': 'https://schema.org', '@type': 'WebPage', name: title, url: `${site.url}/en/`, inLanguage: 'en', dateModified: latest.asOf, about: { '@id': `${site.url}/#org` } };
+---
+<Base title={title} description={description} path="/en/" og="en" lang="en" ld={[page]} crumbs={[{ name: 'English', path: '/en/' }]} modified={latest.asOf}>
+  <article class="doc" lang="en">
+    <h1>What is the kimchi premium right now?</h1>
+    <p class="answer" id="answer">At the {kst(latest.asOf)} reading, the average premium across {coins.length} coins was {fmtPct(avgFx)} against the ECB reference rate (1 USD = {fx.usdKrw} KRW, published {fx.usdKrwDate}) and {fmtPct(avgUsdt)} against Upbit's USDT price ({fx.usdtKrw} KRW). Bitcoin: {fmtPct(btc.premiumFx)} / {fmtPct(btc.premiumUsdt)}.</p>
+    <div class="prose">
+      <p>This site is written in Korean. This page is a short English summary of what it measures; the full board is on the <a href="/" hreflang="ko">Korean home page</a> and every coin has its own <a href="/coins/" hreflang="ko">coin page</a>.</p>
+      <h2>How is the premium calculated?</h2>
+      <p>Premium = Upbit KRW price ÷ (Binance USDT price × KRW per dollar) − 1. We show two bases: the ECB euro reference rates cross-converted to USD/KRW via the Frankfurter API, and Upbit's own KRW-USDT market price. The gap between the two numbers is roughly the "tether premium" ({fmtPct(fx.tetherPremium)} in this reading). Full formulas and sources are on the <a href="/methodology/" hreflang="ko">methodology page</a> (Korean).</p>
+      <h2>Largest Upbit markets in this reading</h2>
+      <div class="table-scroll">
+        <table>
+          <caption>Snapshot {kst(latest.asOf)}. Sources: Upbit Open API, Binance public spot data, Frankfurter (ECB).</caption>
+          <thead><tr><th scope="col">Coin</th><th scope="col">Upbit (KRW)</th><th scope="col">Binance (USDT)</th><th scope="col">vs ECB rate</th><th scope="col">vs USDT</th></tr></thead>
+          <tbody>
+            {top.map((c) => (
+              <tr><th scope="row"><a href={`/coins/${c.symbol.toLowerCase()}/`} hreflang="ko">{c.nameEn} ({c.symbol})</a></th><td class="num">{c.upbitKrw.toLocaleString('en-US')}</td><td class="num">{c.binanceUsdt.toLocaleString('en-US')}</td><td class={`num ${c.premiumFx >= 0 ? 'up' : 'down'}`}>{fmtPct(c.premiumFx)}</td><td class={`num ${c.premiumUsdt >= 0 ? 'up' : 'down'}`}>{fmtPct(c.premiumUsdt)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <h2>What this site is not</h2>
+      <p>It is not investment or arbitrage advice and carries no exchange referral links. Moving funds between Korean and overseas exchanges is subject to Korean foreign-exchange rules, the travel rule and tax; read the <a href="/disclaimer/" hreflang="ko">disclaimer</a>. Contact: <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.</p>
+    </div>
+  </article>
+</Base>

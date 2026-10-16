@@ -5,8 +5,7 @@ import { fitTitle, fitDesc } from '../../lib/text';
 const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 const title = fitTitle(['김치프리미엄 가이드: 개념·계산·역프·테더·법·세금 정리', '김치프리미엄 가이드: 개념, 계산, 역프, 테더, 법, 세금']);
 const description = fitDesc([
-  '김치프리미엄의 뜻과 계산식, 생기는 이유, 역프리미엄, 테더 프리미엄, 해외 거래소 이용 시 법적 유의사항, 가상자산 과세까지 공식 자료 출처와 함께 정리한 가이드 모음입니다.',
-  '김치프리미엄의 뜻과 계산식, 생기는 이유, 역프리미엄, 테더 프리미엄, 해외 거래소 이용 시 법적 유의사항, 가상자산 과세를 공식 자료 출처와 함께 정리한 가이드입니다.',
+  '김치프리미엄의 뜻과 계산식, 생기는 이유, 역프리미엄, 테더 프리미엄, 해외 거래소 법적 유의사항, 가상자산 과세까지 공식 출처와 함께 정리한 가이드 모음입니다.',
 ]);
 ---
 <Base title={title} description={description} path="/guides/" og="guides" crumbs={[{ name: '가이드', path: '/guides/' }]}>

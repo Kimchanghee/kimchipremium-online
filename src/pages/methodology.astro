@@ -4,8 +4,7 @@ import { latest, coins, history, kst } from '../lib/data';
 import { fitTitle, fitDesc } from '../lib/text';
 const title = fitTitle(['김프 계산 방법과 데이터 출처: 업비트·바이낸스·ECB 환율', '김프 계산 방법과 데이터 출처: 업비트, 바이낸스, ECB']);
 const description = fitDesc([
-  '김프 전광판이 쓰는 데이터 출처(업비트 Open API, 바이낸스 공개 시세, Frankfurter ECB 기준환율), 수집 주기, 계산식, 코인 선정 기준, 실패 시 처리, 알려진 한계를 공개합니다. 숫자는 추정해 채우지 않습니다.',
-  '김프 전광판이 쓰는 데이터 출처(업비트 Open API, 바이낸스 공개 시세, ECB 기준환율), 수집 주기, 계산식, 코인 선정 기준, 실패 시 처리, 알려진 한계를 공개합니다. 숫자는 추정해 채우지 않습니다.',
+  '업비트 Open API, 바이낸스 공개 시세, ECB 기준환율 등 데이터 출처와 수집 주기, 계산식, 코인 선정 기준, 실패 처리, 한계를 공개합니다. 숫자는 추정하지 않습니다.',
 ]);
 ---
 <Page title={title} description={description} path="/methodology/" h1="김프 숫자는 어디서 오고 어떻게 계산하나요?" mark="계산 방법" updated="2026-10-16" og="methodology"
