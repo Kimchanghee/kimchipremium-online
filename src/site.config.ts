@@ -14,7 +14,8 @@ export const site = {
   locale: 'ko_KR',
   ga4Id: (env.PUBLIC_GA4_ID as string | undefined) ?? '',
   gscVerification: (env.PUBLIC_GSC_VERIFICATION as string | undefined) ?? '',
-  naverVerification: (env.PUBLIC_NAVER_VERIFICATION as string | undefined) ?? '',
+  // Public Search Advisor ownership token (rendered in HTML by design); kept in source so data-only rebuilds keep it.
+  naverVerification: (env.PUBLIC_NAVER_VERIFICATION as string | undefined) || '16d5c9bb4020cffa5966f1f7e0a5f57e3c95a81d',
   adsenseClient: 'ca-pub-4490818204529253',
   // Enable only after publisher account and required certified CMP are verified.
   adsEnabled: env.PUBLIC_ADS_ENABLED === 'true',

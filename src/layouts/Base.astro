@@ -1,5 +1,6 @@
 ---
 import { site } from '../site.config';
+import AdSlot from '../components/AdSlot.astro';
 import '../styles/global.css';
 
 interface Crumb { name: string; path: string }
@@ -46,7 +47,7 @@ const current = Astro.url.pathname;
   <meta name="theme-color" content="#0e3a2f" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="alternate" type="application/rss+xml" title="김프 전광판 가이드" href="/rss.xml" />
-  {path === '/' && <link rel="alternate" hreflang="en" href={`${site.url}/en/`} />}
+  {(path === '/' || path === '/en/') && <><link rel="alternate" hreflang="ko" href={`${site.url}/`} /><link rel="alternate" hreflang="en" href={`${site.url}/en/`} /><link rel="alternate" hreflang="x-default" href={`${site.url}/`} /></>}
   <meta property="og:type" content={type} />
   <meta property="og:site_name" content={site.name} />
   <meta property="og:title" content={title} />
@@ -105,6 +106,7 @@ const current = Astro.url.pathname;
   )}
   <main id="main" class="wrap">
     <slot />
+    <AdSlot />
   </main>
   <footer class="foot">
     <div class="foot__inner">
