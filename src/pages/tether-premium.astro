@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import { latest, history, kst } from '../lib/data';
+import { fmtPct } from '../lib/calc.mjs';
+import { fitTitle, fitDesc } from '../lib/text';
+import { SOURCES, cls, datasetLd } from '../lib/qpage';
+const fx = latest.fx;
+// Recorded readings only: tether premium = 업비트 USDT 원화가 ÷ 기준환율 − 1 (same formula as the home page).
+const recent = history.readings.filter((r) => typeof r.usdt === 'number' && typeof r.fx === 'number' && r.fx > 0).slice(-12).reverse().map((r) => ({ t: r.t, fx: r.fx, usdt: r.usdt, tp: (r.usdt / r.fx - 1) * 100 }));
+const answer = `${kst(fx.usdtKrwTime)} 업비트 USDT 체결가는 ${fx.usdtKrw.toLocaleString('ko-KR')}원으로, ECB 기준환율 1달러 ${fx.usdKrw.toLocaleString('ko-KR')}원(${fx.usdKrwDate} 고시)보다 ${fmtPct(fx.tetherPremium)} ${fx.tetherPremium >= 0 ? '높습니다' : '낮습니다'}. 이 값이 테더 프리미엄(테더 김프)입니다.`;
+const title = fitTitle(['테더 김프: 오늘 업비트 USDT 테더 프리미엄은 몇 %인가', '테더 김프 오늘: 업비트 USDT 테더 프리미엄은 몇 %?']);
+const description = fitDesc([
+  `업비트 USDT 원화 체결가를 ECB 기준 원/달러 환율과 비교한 테더 프리미엄(테더 김프)을 보여줍니다. 최근 수집 기록과 계산식, 수집 시각과 출처를 함께 표시합니다.`,
+  `업비트 USDT 원화 체결가를 ECB 기준 원/달러 환율과 비교한 테더 프리미엄(테더 김프)을 보여줍니다. 최근 수집 기록, 계산식, 수집 시각과 출처를 표시합니다.`,
+  `업비트 USDT 원화 체결가를 ECB 기준 원/달러 환율과 비교한 테더 프리미엄(테더 김프)입니다. 최근 수집 기록과 계산식, 수집 시각·출처 표시.`,
+]);
+const ld = [datasetLd('테더 프리미엄(업비트 USDT 대비 기준환율)', description, '/tether-premium/', '/data/history.json', latest.asOf, `${history.since}/${latest.asOf.slice(0, 10)}`)];
+---
+<Base title={title} description={description} path="/tether-premium/" og="guide-tether-premium" ld={ld} crumbs={[{ name: '테더 김프', path: '/tether-premium/' }]} modified={latest.asOf}>
+  <h1>테더 김프는 오늘 몇 %인가요?</h1>
+  <p class="answer" id="answer">{answer}</p>
+  <dl class="strip">
+    <div><dt>업비트 USDT</dt><dd>{fx.usdtKrw.toLocaleString('ko-KR')}원</dd><small>{kst(fx.usdtKrwTime)} 체결가</small></div>
+    <div><dt>원/달러 기준환율</dt><dd>{fx.usdKrw.toLocaleString('ko-KR', { minimumFractionDigits: 2 })}</dd><small>ECB 고시 {fx.usdKrwDate} · Frankfurter</small></div>
+    <div><dt>테더 프리미엄</dt><dd class={cls(fx.tetherPremium)}>{fmtPct(fx.tetherPremium)}</dd><small>USDT 원화가 ÷ 기준환율 − 1</small></div>
+  </dl>
+  <h2>최근 수집 기록에서 테더 김프는 얼마였나요?</h2>
+  <table class="board">
+    <caption>최근 {recent.length}회 수집 기록 · 수집된 값만 표시(보간·추정 없음)</caption>
+    <thead><tr><th scope="col" style="text-align:left">수집 시각</th><th scope="col">업비트 USDT</th><th scope="col" class="hide-m">기준환율</th><th scope="col">테더 김프</th></tr></thead>
+    <tbody>{recent.map((r) => <tr><th scope="row">{kst(r.t).slice(5)}</th><td>{r.usdt.toLocaleString('ko-KR')}원</td><td class="hide-m">{r.fx.toLocaleString('ko-KR')}</td><td class={`p ${cls(r.tp)}`}>{fmtPct(r.tp)}</td></tr>)}</tbody>
+  </table>
+  <p>기준환율은 ECB가 영업일마다 한 번 고시하는 값이라 주말·휴일에는 직전 고시값이 유지됩니다. 테더 김프가 두 김프 숫자의 차이를 대부분 설명하는 이유는 <a href="/guides/tether-premium/">테더 프리미엄 가이드</a>와 <a href="/guides/exchange-rate-basics/">환율 기준 가이드</a>에, 코인별 값은 <a href="/ranking/">김프 순위</a>에 있습니다.</p>
+  <p>출처: {SOURCES.filter((s) => !s[0].startsWith('바이낸스')).map(([n, u], i) => <>{i > 0 && ' · '}<a href={u} rel="noopener">{n}</a></>)}. 원자료 내려받기: <a href="/data/latest.json">latest.json</a> · <a href="/data/history.json">history.json</a>.</p>
+  <p class="note">이 값은 투자나 차익거래 권유가 아닙니다. 해외 거래소 이용과 해외 송금에는 외국환거래법·특정금융정보법상 제약이 있습니다. <a href="/guides/overseas-exchange-legal/">해외 거래소 이용 시 법적 유의사항</a>과 <a href="/disclaimer/">면책 고지</a>를 확인하세요.</p>
+</Base>

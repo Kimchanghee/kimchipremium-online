@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import { coins, latest, history, kst } from '../lib/data';
+import { fmtPct, mean } from '../lib/calc.mjs';
+import { fitTitle, fitDesc } from '../lib/text';
+import { SOURCES, cls, datasetLd } from '../lib/qpage';
+// Recorded readings only (history.json keeps the ECB-reference-rate premium per coin); no reconstruction or interpolation.
+const rs = history.readings;
+const btcSeries = rs.filter((r) => typeof r.p.BTC === 'number').map((r) => ({ t: r.t, v: r.p.BTC }));
+const minB = btcSeries.reduce((a, b) => (b.v < a.v ? b : a), btcSeries[0]);
+const maxB = btcSeries.reduce((a, b) => (b.v > a.v ? b : a), btcSeries[0]);
+const lastB = btcSeries[btcSeries.length - 1];
+const avgOf = (p: Record<string, number>) => mean(Object.values(p).filter((v) => typeof v === 'number')) as number;
+const recent = rs.slice(-16).reverse();
+const answer = `${history.since}부터 ${rs.length}회 수집한 기록에서 비트코인 김치프리미엄(ECB 기준환율 대비)은 최저 ${fmtPct(minB.v)}(${kst(minB.t)}), 최고 ${fmtPct(maxB.v)}(${kst(maxB.t)})였고, 마지막 기록(${kst(lastB.t)})은 ${fmtPct(lastB.v)}입니다.`;
+const title = fitTitle(['김치프리미엄 추이: 최근 며칠 김프는 어떻게 움직였나', '김치프리미엄 추이: 최근 며칠 김프 수집 기록과 변화']);
+const description = fitDesc([
+  `${history.since}부터 실제로 수집한 김치프리미엄 기록만으로 비트코인과 ${coins.length}개 코인 평균 김프의 최근 추이를 보여줍니다. 보간이나 추정 없이 수집 시각과 출처를 표시합니다.`,
+  `${history.since}부터 실제로 수집한 김치프리미엄 기록으로 비트코인과 ${coins.length}개 코인 평균 김프의 최근 추이를 보여줍니다. 보간·추정 없이 수집 시각과 출처를 표시합니다.`,
+  `${history.since}부터 실제 수집한 김치프리미엄 기록으로 비트코인과 코인 평균 김프의 최근 추이를 보여줍니다. 보간·추정 없이 수집 시각과 출처를 표시합니다.`,
+]);
+const ld = [datasetLd('김치프리미엄 수집 기록', description, '/history/', '/data/history.csv', rs[rs.length - 1]?.t ?? latest.asOf, `${history.since}/${(rs[rs.length - 1]?.t ?? latest.asOf).slice(0, 10)}`)];
+---
+<Base title={title} description={description} path="/history/" og="coin" ld={ld} crumbs={[{ name: '김프 추이', path: '/history/' }]} modified={rs[rs.length - 1]?.t ?? latest.asOf}>
+  <h1>김프는 최근 며칠 동안 어떻게 움직였나요?</h1>
+  <p class="answer" id="answer">{answer}</p>
+  <table class="board">
+    <caption>최근 {recent.length}회 수집 기록 · ECB 기준환율 대비 김프 · 수집된 값만 표시</caption>
+    <thead><tr><th scope="col" style="text-align:left">수집 시각</th><th scope="col">비트코인</th><th scope="col" class="hide-m">이더리움</th><th scope="col" class="hide-m">리플</th><th scope="col">기록된 코인 평균</th><th scope="col" class="hide-m">기준환율</th></tr></thead>
+    <tbody>{recent.map((r) => { const a = avgOf(r.p); return <tr><th scope="row">{kst(r.t).slice(5)}</th><td class={`p ${cls(r.p.BTC ?? 0)}`}>{typeof r.p.BTC === 'number' ? fmtPct(r.p.BTC) : '기록 없음'}</td><td class={`p hide-m ${cls(r.p.ETH ?? 0)}`}>{typeof r.p.ETH === 'number' ? fmtPct(r.p.ETH) : '기록 없음'}</td><td class={`p hide-m ${cls(r.p.XRP ?? 0)}`}>{typeof r.p.XRP === 'number' ? fmtPct(r.p.XRP) : '기록 없음'}</td><td class={`p ${cls(a)}`}>{fmtPct(a)}</td><td class="hide-m">{r.fx.toLocaleString('ko-KR')}</td></tr>; })}</tbody>
+  </table>
+  <h2>이 기록은 어떻게 만들어지나요?</h2>
+  <p>시세판을 갱신할 때마다 코인별 김프(소수 셋째 자리)와 그때의 기준환율·업비트 USDT 가격을 한 줄씩 남깁니다. 수집이 실패한 시간대는 비어 있으며, 과거 값을 다시 계산해 채우지 않습니다. 하루 중 어느 때 김프가 커지는지는 30일 이상 기록이 쌓인 뒤에 다룹니다. 코인별 기록은 각 <a href="/coins/">코인 페이지</a>, 계산식은 <a href="/methodology/">계산 방법</a>, 오늘 값은 <a href="/ranking/">김프 순위</a>에 있습니다.</p>
+  <p>출처: {SOURCES.map(([n, u], i) => <>{i > 0 && ' · '}<a href={u} rel="noopener">{n}</a></>)}. 전체 기록 내려받기: <a href="/data/history.json">history.json</a> · <a href="/data/history.csv">history.csv</a>.</p>
+  <p class="note">이 기록은 투자나 차익거래 권유가 아니며 과거 값이 앞으로의 김프를 뜻하지 않습니다. <a href="/guides/arbitrage-risks/">차익거래 위험</a>과 <a href="/disclaimer/">면책 고지</a>를 확인하세요.</p>
+</Base>

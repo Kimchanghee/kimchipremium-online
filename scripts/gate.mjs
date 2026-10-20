@@ -73,6 +73,10 @@ for (const file of files) {
       const [lo, hi] = LANG === 'ko' ? [40, 260] : [15, 90];
       if (n < lo || n > hi) errs.push(`answer length ${n} outside ${lo}-${hi}`);
     }
+    // Question pages: an H1 phrased as a question must be followed directly by the #answer paragraph.
+    const h1m = /<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(main);
+    if (h1m && /[?？]$/.test(textOf(h1m[1]))) { const fp = /<p\b[^>]*>/i.exec(main.slice(main.indexOf(h1m[0]) + h1m[0].length)); if (!fp || !/id="answer"/.test(fp[0])) errs.push('first paragraph after question H1 is not #answer'); }
+    if (/^\/(ranking|reverse-premium|tether-premium|history)\/$/.test(urlPath) && !(h1m && /[?？]$/.test(textOf(h1m[1])))) errs.push('question page H1 is not a question');
     const internal = new Set([...main.matchAll(/href="(\/[^"#]*)/g)].map((m) => m[1]).filter((h) => h !== urlPath));
     if (internal.size < 2) errs.push(`only ${internal.size} internal links in main`);
     if (!inSitemap.has(SITE + urlPath)) errs.push('not in sitemap');

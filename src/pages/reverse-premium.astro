@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import { coins, latest, kst } from '../lib/data';
+import { fmtPct } from '../lib/calc.mjs';
+import { fitTitle, fitDesc } from '../lib/text';
+import { SOURCES, cls, datasetLd } from '../lib/qpage';
+const negFx = coins.filter((c) => c.premiumFx < 0).sort((a, b) => a.premiumFx - b.premiumFx);
+const negUsdt = coins.filter((c) => c.premiumUsdt < 0).sort((a, b) => a.premiumUsdt - b.premiumUsdt);
+const rows = coins.filter((c) => c.premiumFx < 0 || c.premiumUsdt < 0).sort((a, b) => a.premiumUsdt - b.premiumUsdt);
+const lowest = [...coins].sort((a, b) => a.premiumUsdt - b.premiumUsdt)[0];
+const list = (xs: typeof coins, k: 'premiumFx' | 'premiumUsdt') => xs.slice(0, 5).map((c) => `${c.nameKo} ${fmtPct(c[k])}`).join(', ') + (xs.length > 5 ? ' 등' : '');
+const fxPart = negFx.length ? `ECB 기준환율 대비 역프인 코인은 ${negFx.length}개(${list(negFx, 'premiumFx')})` : 'ECB 기준환율 대비 역프인 코인은 없고';
+const usdtPart = negUsdt.length ? `업비트 USDT 대비 역프인 코인은 ${negUsdt.length}개(${list(negUsdt, 'premiumUsdt')})입니다.` : `업비트 USDT 대비로도 역프인 코인은 없습니다. USDT 기준 김프가 가장 낮은 코인은 ${lowest.nameKo}(${lowest.symbol}) ${fmtPct(lowest.premiumUsdt)}입니다.`;
+const answer = `${kst(latest.asOf)} 수집 기준, ${coins.length}개 코인 중 ${fxPart}${negFx.length ? '이고' : ''}, ${usdtPart}`;
+const title = fitTitle(['역프 코인 확인: 지금 마이너스 김치프리미엄인 코인은?', '역프 코인: 지금 김치프리미엄이 마이너스인 코인이 있나']);
+const description = fitDesc([
+  `업비트 원화 가격이 바이낸스 가격보다 싼 역프(마이너스 김프) 코인을 ECB 기준환율과 업비트 USDT 두 기준으로 확인합니다. 수집 시각과 출처를 함께 표시합니다.`,
+  `업비트 원화 가격이 바이낸스 가격보다 싼 역프(마이너스 김프) 코인을 ECB 기준환율과 업비트 USDT 두 기준으로 확인합니다. 수집 시각·출처를 표시합니다.`,
+  `업비트 원화 가격이 바이낸스 가격보다 싼 역프(마이너스 김프) 코인을 ECB 기준환율과 업비트 USDT 두 기준으로 확인합니다. ${coins.length}개 코인, 수집 시각과 출처를 함께 표시합니다.`,
+]);
+const ld = [datasetLd('역프(마이너스 김프) 코인 목록', description, '/reverse-premium/', '/data/latest.json')];
+---
+<Base title={title} description={description} path="/reverse-premium/" og="coin" ld={ld} crumbs={[{ name: '역프 코인', path: '/reverse-premium/' }]} modified={latest.asOf}>
+  <h1>지금 역프(마이너스 김프)인 코인이 있나요?</h1>
+  <p class="answer" id="answer">{answer}</p>
+  {rows.length > 0 ? (
+    <table class="board">
+      <caption>한 기준이라도 마이너스인 코인 · USDT 김프 낮은 순 · {kst(latest.asOf)} 수집</caption>
+      <thead><tr><th scope="col" style="text-align:left">코인</th><th scope="col">김프<br />기준환율</th><th scope="col">김프<br />USDT</th></tr></thead>
+      <tbody>{rows.map((c) => <tr><th scope="row"><a href={`/coins/${c.symbol.toLowerCase()}/`}>{c.nameKo}</a><span class="sym">{c.symbol}</span></th><td class={`p ${cls(c.premiumFx)}`}>{fmtPct(c.premiumFx)}</td><td class={`p ${cls(c.premiumUsdt)}`}>{fmtPct(c.premiumUsdt)}</td></tr>)}</tbody>
+    </table>
+  ) : <p>이번 수집에서는 두 기준 모두 마이너스인 코인이 없습니다. 전체 값은 <a href="/ranking/">김프 순위</a>에서 볼 수 있습니다.</p>}
+  <h2>역프는 왜 생기나요?</h2>
+  <p>역프는 국내 가격이 해외 가격을 원화로 환산한 값보다 낮은 상태입니다. 원인과 해석은 <a href="/guides/reverse-premium/">역프리미엄 가이드</a>에, 두 기준의 값이 다른 이유는 <a href="/guides/tether-premium/">테더 프리미엄 가이드</a>와 <a href="/tether-premium/">오늘의 테더 김프</a>에 정리했습니다. 호가 단위가 큰 코인은 0.1~1% 차이가 실제 가격 차이가 아닐 수 있습니다.</p>
+  <p>출처: {SOURCES.map(([n, u], i) => <>{i > 0 && ' · '}<a href={u} rel="noopener">{n}</a></>)}. 원자료 내려받기: <a href="/data/latest.json">latest.json</a>.</p>
+  <p class="note">이 표는 투자나 차익거래 권유가 아닙니다. 해외 거래소 이용과 해외 송금에는 외국환거래법·특정금융정보법상 제약이 있습니다. <a href="/guides/overseas-exchange-legal/">해외 거래소 이용 시 법적 유의사항</a>과 <a href="/disclaimer/">면책 고지</a>를 확인하세요.</p>
+</Base>

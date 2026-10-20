@@ -26,3 +26,9 @@ Baseline: deployment day (parent records it). Before deploy the domain returned 
 | AdSense | AdSense site status | Approval state only (no revenue claims) |
 
 Weekend dips are expected for market topics; treat a weekday/weekend pattern as real demand, not a bug.
+
+## 재측정 2026-11-03 (2026-10-20 5레인 작업 기준)
+- 수치 기준선: 콘솔 데이터 대기 중(GSC·Bing·네이버 서치어드바이저 내보내기 전에는 숫자를 기록하지 않음).
+- 2026-10-20 반영: 질문 페이지 /ranking/, /reverse-premium/, /tether-premium/, /history/; 원자료 /data/latest.json, /data/history.json, /data/history.csv; robots에 Claude-SearchBot·Perplexity-User; llms.txt 최종 갱신일과 내려받기 링크; gate에 질문 H1 다음 첫 문단 = 직답 검사.
+- 2026-11-03 기록: 새 URL별 색인 여부, 노출·클릭·평균 순위(GSC), 네이버 수집 여부(서치어드바이저 수집 요청은 소유자 콘솔 작업), Bing 색인 여부.
+- 인용 점검(O/X, 날짜·정확한 질문 기록, Perplexity·ChatGPT 검색·네이버 AI 브리핑): 오늘 김치프리미엄이 가장 높은 코인은 무엇인가요? / 지금 역프(마이너스 김프)인 코인이 있나요? / 테더 김프는 오늘 몇 %인가요? / 김프는 최근 며칠 동안 어떻게 움직였나요? / 김프 전광판은 무엇인가요?
